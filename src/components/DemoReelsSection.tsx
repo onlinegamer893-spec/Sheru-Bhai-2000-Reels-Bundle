@@ -12,7 +12,13 @@ export const DemoReelsSection: React.FC<DemoReelsSectionProps> = ({ demoReels, o
   const [isMuted, setIsMuted] = useState(false);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
 
-  // Simulated reel video progress loop when playing
+  const activeReels = React.useMemo(() => {
+    return demoReels
+      .filter((r) => r.active !== false)
+      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+  }, [demoReels]);
+
+  // Simulated reel video progress loop when playing image preview
   useEffect(() => {
     if (!playingId) return;
     const interval = setInterval(() => {
@@ -67,9 +73,9 @@ export const DemoReelsSection: React.FC<DemoReelsSectionProps> = ({ demoReels, o
           </div>
         </div>
 
-        {/* 4 Vertical Video Thumbnails Side by Side (Horizontally scrollable on mobile) */}
+        {/* Vertical Video Thumbnails Side by Side (Horizontally scrollable on mobile) */}
         <div className="flex md:grid md:grid-cols-4 gap-4 overflow-x-auto no-scrollbar pb-3 md:pb-0 snap-x snap-mandatory">
-          {demoReels.slice(0, 4).map((reel) => {
+          {(activeReels.length > 0 ? activeReels : demoReels).slice(0, 4).map((reel) => {
             const isPlaying = playingId === reel.id;
             const progress = progressMap[reel.id] || 0;
 
@@ -80,14 +86,25 @@ export const DemoReelsSection: React.FC<DemoReelsSectionProps> = ({ demoReels, o
               >
                 {/* 9:16 Frame */}
                 <div className="relative aspect-[9/16] w-full bg-black overflow-hidden flex items-center justify-center">
-                  <img
-                    src={reel.thumbnailUrl}
-                    alt={reel.title}
-                    referrerPolicy="no-referrer"
-                    className={`w-full h-full object-cover transition-transform duration-500 ${
-                      isPlaying ? 'scale-105 brightness-105' : 'group-hover:scale-102'
-                    }`}
-                  />
+                  {isPlaying && reel.videoUrl ? (
+                    <video
+                      src={reel.videoUrl}
+                      autoPlay
+                      loop
+                      muted={isMuted}
+                      playsInline
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <img
+                      src={reel.thumbnailUrl}
+                      alt={reel.title}
+                      referrerPolicy="no-referrer"
+                      className={`w-full h-full object-cover transition-transform duration-500 ${
+                        isPlaying ? 'scale-105 brightness-105' : 'group-hover:scale-102'
+                      }`}
+                    />
+                  )}
 
                   {/* Dark vignette */}
                   <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80 pointer-events-none" />

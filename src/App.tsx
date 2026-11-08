@@ -20,7 +20,16 @@ import { AdminDashboardModal } from './components/AdminDashboardModal';
 import { LegalModal } from './components/LegalModal';
 
 export default function App() {
-  const [storeConfig, setStoreConfig] = useState<PublicStoreSettings>(DEFAULT_STORE_CONFIG);
+  const [storeConfig, setStoreConfig] = useState<PublicStoreSettings>(() => {
+    try {
+      const cached = localStorage.getItem('sb_store_settings');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        return { ...DEFAULT_STORE_CONFIG, ...parsed };
+      }
+    } catch (_) {}
+    return DEFAULT_STORE_CONFIG;
+  });
   
   // Modals state
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -47,15 +56,25 @@ export default function App() {
   const loadConfig = async () => {
     try {
       const res = await fetch('/api/config');
-      const data = await res.json();
-      if (data.success && data.settings) {
-        setStoreConfig((prev) => ({
-          ...prev,
-          ...data.settings,
-        }));
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data.success && data.settings) {
+          setStoreConfig((prev) => {
+            const updated = {
+              ...prev,
+              ...data.settings,
+            };
+            try {
+              localStorage.setItem('sb_store_settings', JSON.stringify(updated));
+            } catch (_) {}
+            return updated;
+          });
+          return;
+        }
       }
     } catch (err) {
-      console.warn('Could not load remote config, using defaults:', err);
+      console.warn('Could not load remote config, using cache:', err);
     }
   };
 
@@ -97,6 +116,7 @@ export default function App() {
       <main className="flex-1">
         {/* 1. Main Hero Section (2027 Edition, Cover on Left, 11 Bullets, Rating & ₹197 Offer Card) */}
         <HeroSection
+          productImages={storeConfig.productImages}
           onBuyClick={() => setIsCheckoutOpen(true)}
           onExploreDemos={() => {
             const el = document.getElementById('demos');
@@ -104,7 +124,7 @@ export default function App() {
           }}
         />
 
-        {/* 2. Product Demo (DEMO REELS VIDEOS 🔥 - 4 Thumbnails side-by-side, mobile scrollable) */}
+        {/* 2. Product Demo (DEMO REELS VIDEOS 🔥 - Thumbnails side-by-side, mobile scrollable) */}
         <DemoReelsSection
           demoReels={storeConfig.demoReels}
           onBuyClick={() => setIsCheckoutOpen(true)}
@@ -140,6 +160,7 @@ export default function App() {
         onClose={() => setIsCheckoutOpen(false)}
         upiId={storeConfig.upiId}
         merchantName={storeConfig.merchantName}
+        customQrUrl={storeConfig.customQrUrl}
         onOrderSubmitted={handleOrderSubmitted}
       />
 
@@ -155,6 +176,7 @@ export default function App() {
       <AdminDashboardModal
         isOpen={isAdminOpen}
         onClose={handleCloseAdmin}
+        initialSettings={storeConfig}
         onSettingsUpdated={loadConfig}
       />
 

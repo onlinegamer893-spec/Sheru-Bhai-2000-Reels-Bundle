@@ -41,7 +41,7 @@ export const InstagramDemoSection: React.FC<InstagramDemoSectionProps> = ({ inst
             <div className="pt-4 flex items-center gap-4">
               <div className="relative w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 shrink-0">
                 <img
-                  src={ASSET_IMAGES.avatarLogo}
+                  src={instagram.avatarUrl || ASSET_IMAGES.avatarLogo}
                   alt={instagram.displayName}
                   referrerPolicy="no-referrer"
                   className="w-full h-full rounded-full object-cover border-2 border-black"
@@ -73,14 +73,17 @@ export const InstagramDemoSection: React.FC<InstagramDemoSectionProps> = ({ inst
                 REELS GRID
               </div>
               <div className="grid grid-cols-3 gap-2">
-                {[
-                  { img: ASSET_IMAGES.royalReel, views: '22.4M' },
-                  { img: ASSET_IMAGES.supercarReel, views: '14.8M' },
-                  { img: ASSET_IMAGES.funnyLionReel, views: '18.2M' },
-                ].map((item, i) => (
-                  <div key={i} className="relative aspect-square rounded-xl overflow-hidden bg-black group">
+                {(instagram.postGrid && instagram.postGrid.length > 0
+                  ? instagram.postGrid
+                  : [
+                      { id: '1', imageUrl: ASSET_IMAGES.royalReel, views: '22.4M' },
+                      { id: '2', imageUrl: ASSET_IMAGES.supercarReel, views: '14.8M' },
+                      { id: '3', imageUrl: ASSET_IMAGES.funnyLionReel, views: '18.2M' },
+                    ]
+                ).slice(0, 6).map((item, i) => (
+                  <div key={item.id || i} className="relative aspect-square rounded-xl overflow-hidden bg-black group">
                     <img
-                      src={item.img}
+                      src={item.imageUrl}
                       alt="Reel preview"
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
@@ -88,7 +91,7 @@ export const InstagramDemoSection: React.FC<InstagramDemoSectionProps> = ({ inst
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="flex items-center gap-1 text-white text-xs font-bold">
                         <Play className="w-3 h-3 fill-white" />
-                        <span>{item.views}</span>
+                        <span>{item.views || '10M+'}</span>
                       </div>
                     </div>
                   </div>

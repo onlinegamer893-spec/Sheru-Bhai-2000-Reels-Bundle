@@ -2,12 +2,32 @@ import React from 'react';
 import { ASSET_IMAGES } from '../constants';
 import { Star, ShieldCheck, Lock, Zap } from 'lucide-react';
 
+import { ProductImages } from '../types';
+
 interface HeroSectionProps {
   onBuyClick: () => void;
   onExploreDemos: () => void;
+  productImages?: ProductImages;
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ onBuyClick, onExploreDemos }) => {
+export const HeroSection: React.FC<HeroSectionProps> = ({ onBuyClick, onExploreDemos, productImages }) => {
+  const [activeImageIndex, setActiveImageIndex] = React.useState<number>(0);
+
+  const displayImages = React.useMemo(() => {
+    const list: string[] = [];
+    if (productImages?.bundleMockup) list.push(productImages.bundleMockup);
+    if (productImages?.coverImage && !list.includes(productImages.coverImage)) list.push(productImages.coverImage);
+    if (productImages?.promotionalImages && productImages.promotionalImages.length > 0) {
+      productImages.promotionalImages.forEach((p) => {
+        if (p.url && !list.includes(p.url)) list.push(p.url);
+      });
+    }
+    if (list.length === 0) list.push(ASSET_IMAGES.bundleMockup);
+    return list;
+  }, [productImages]);
+
+  const activeImage = displayImages[activeImageIndex] || displayImages[0] || ASSET_IMAGES.bundleMockup;
+
   const BULLET_POINTS = [
     '2000+ Viral Sheru Reels',
     'Trending AI Lion Videos',
@@ -35,7 +55,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onBuyClick, onExploreD
             <div className="relative w-full max-w-md aspect-4/3 sm:aspect-square rounded-2xl overflow-hidden glass-panel-glow p-2 border border-purple-500/30 shadow-2xl">
               <div className="relative w-full h-full rounded-xl overflow-hidden bg-[#07060e] flex items-center justify-center">
                 <img
-                  src={ASSET_IMAGES.bundleMockup}
+                  src={activeImage}
                   alt="Sheru Bhai Reels Bundle Cover Mockup"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-102"
@@ -56,6 +76,25 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onBuyClick, onExploreD
                 </div>
               </div>
             </div>
+
+            {/* Thumbnail switcher if multiple promotional images exist */}
+            {displayImages.length > 1 && (
+              <div className="flex items-center gap-2 mt-3 overflow-x-auto max-w-md p-1">
+                {displayImages.map((imgUrl, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImageIndex(idx)}
+                    className={`w-12 h-12 rounded-lg overflow-hidden border transition-all shrink-0 cursor-pointer ${
+                      activeImageIndex === idx
+                        ? 'border-yellow-400 ring-2 ring-yellow-400/40 scale-105'
+                        : 'border-white/20 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={imgUrl} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Quick Demo Anchor Button */}
             <button

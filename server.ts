@@ -48,9 +48,20 @@ export interface StoreSettings {
   upiId: string;
   merchantName: string;
   supportWhatsApp: string;
+  customQrUrl?: string;
   adminEmail: string;
-  adminPasswordHash: string; // default hash for 'sheru2026'
+  adminPasswordHash: string;
   bundleDownloadUrl: string;
+  productImages?: {
+    coverImage?: string;
+    bundleMockup?: string;
+    promotionalImages?: Array<{
+      id: string;
+      url: string;
+      caption?: string;
+      createdAt: string;
+    }>;
+  };
   instagram: {
     username: string;
     displayName: string;
@@ -59,6 +70,15 @@ export interface StoreSettings {
     postsCount: string;
     bio: string;
     isVerified: boolean;
+    avatarUrl?: string;
+    profileScreenshot?: string;
+    profileUrl?: string;
+    postGrid?: Array<{
+      id: string;
+      imageUrl: string;
+      views?: string;
+      likes?: string;
+    }>;
   };
   demoReels: Array<{
     id: string;
@@ -67,7 +87,18 @@ export interface StoreSettings {
     views: string;
     likes: string;
     thumbnailUrl: string;
+    videoUrl?: string;
     description: string;
+    active?: boolean;
+    displayOrder?: number;
+  }>;
+  productDownloads?: Array<{
+    id: string;
+    fileName: string;
+    fileSize: string;
+    fileUrl: string;
+    uploadedAt: string;
+    version?: string;
   }>;
 }
 
@@ -80,12 +111,31 @@ const DEFAULT_SETTINGS: StoreSettings = {
   upiId: 'sherubhai.reels@oksbi',
   merchantName: 'SHERU BHAI MEDIA',
   supportWhatsApp: '+919876543210',
+  customQrUrl: '',
   adminEmail: process.env.ADMIN_EMAIL || 'onlinegamer893@gmail.com',
   adminPasswordHash: crypto
     .createHash('sha256')
     .update(process.env.ADMIN_PASSWORD || 'Rayyan@1234')
     .digest('hex'),
   bundleDownloadUrl: 'https://drive.google.com/drive/folders/1SheruBhaiMasterVaultHDReelsAI',
+  productImages: {
+    coverImage: '/src/assets/images/sheru_bundle_mockup_1794107965527.jpg',
+    bundleMockup: '/src/assets/images/sheru_bundle_mockup_1794107965527.jpg',
+    promotionalImages: [
+      {
+        id: 'promo-1',
+        url: '/src/assets/images/demo_reel_royal_1794107966987.jpg',
+        caption: 'Sheru Bhai Royal Maharaja Edition',
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'promo-2',
+        url: '/src/assets/images/demo_reel_supercar_1794107967087.jpg',
+        caption: 'Luxury Midnight Beast Fleet',
+        createdAt: new Date().toISOString(),
+      },
+    ],
+  },
   instagram: {
     username: 'sherubhai.official',
     displayName: 'SHERU BHAI | King of AI Reels 👑',
@@ -94,7 +144,24 @@ const DEFAULT_SETTINGS: StoreSettings = {
     postsCount: '342',
     bio: '🔥 India’s #1 AI Reels Creator\n🚀 100M+ Monthly Views\n👑 Living Royal • AI Supercars • Animal Attitude\n👇 Get 2000+ Ready Reels for ₹197 Only!',
     isVerified: true,
+    avatarUrl: '/src/assets/images/sheru_avatar_logo_1794107968916.jpg',
+    profileUrl: 'https://instagram.com/sherubhai.official',
+    postGrid: [
+      { id: 'post-1', imageUrl: '/src/assets/images/demo_reel_royal_1794107966987.jpg', views: '22.4M', likes: '1.9M' },
+      { id: 'post-2', imageUrl: '/src/assets/images/demo_reel_supercar_1794107967087.jpg', views: '14.8M', likes: '1.2M' },
+      { id: 'post-3', imageUrl: '/src/assets/images/demo_reel_funny_lion_1794109493564.jpg', views: '18.2M', likes: '1.5M' },
+    ],
   },
+  productDownloads: [
+    {
+      id: 'dl-1',
+      fileName: 'Sheru_Bhai_Viral_Reels_Master_Vault_2027.zip',
+      fileSize: '4.8 GB',
+      fileUrl: 'https://drive.google.com/drive/folders/1SheruBhaiMasterVaultHDReelsAI',
+      uploadedAt: new Date().toISOString(),
+      version: '2027.1 HD',
+    },
+  ],
   demoReels: [
     {
       id: 'demo-1',
@@ -104,6 +171,8 @@ const DEFAULT_SETTINGS: StoreSettings = {
       likes: '1.2M',
       thumbnailUrl: '/src/assets/images/demo_reel_supercar_1794107967087.jpg',
       description: 'Futuristic matte black supercar tearing through neon rain in Dubai.',
+      active: true,
+      displayOrder: 1,
     },
     {
       id: 'demo-2',
@@ -729,17 +798,143 @@ app.post('/api/admin/orders/:orderId/reject', verifyAdmin, (req: Request, res: R
   });
 });
 
-// 11. Admin Update Settings (UPI ID, Reels, Instagram info, etc.)
+// 11. Admin Upload Image (Cover, Mockup, Promotional, QR, Instagram)
+app.post('/api/admin/upload-image', verifyAdmin, (req: Request, res: Response) => {
+  try {
+    const { base64, prefix = 'media' } = req.body;
+    if (!base64 || typeof base64 !== 'string') {
+      return res.status(400).json({ success: false, message: 'Base64 image data is required.' });
+    }
+
+    const matches = base64.match(/^data:image\/([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return res.status(400).json({ success: false, message: 'Invalid image format.' });
+    }
+
+    const extension = matches[1].replace('jpeg', 'jpg');
+    const buffer = Buffer.from(matches[2], 'base64');
+    const filename = `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${extension}`;
+    const filepath = path.join(UPLOADS_DIR, filename);
+
+    fs.writeFileSync(filepath, buffer);
+    const url = `/uploads/${filename}`;
+
+    return res.json({
+      success: true,
+      url,
+      message: 'Image uploaded successfully.',
+    });
+  } catch (err: any) {
+    console.error('Image upload error:', err);
+    return res.status(500).json({ success: false, message: err.message || 'Image upload failed.' });
+  }
+});
+
+// 12. Admin Upload Demo Video (MP4)
+app.post('/api/admin/upload-video', verifyAdmin, (req: Request, res: Response) => {
+  try {
+    const { base64, title } = req.body;
+    if (!base64 || typeof base64 !== 'string') {
+      return res.status(400).json({ success: false, message: 'Video base64 data is required.' });
+    }
+
+    const matches = base64.match(/^data:video\/([A-Za-z0-9-+]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return res.status(400).json({ success: false, message: 'Invalid video format. Please upload MP4 or WEBM.' });
+    }
+
+    const extension = matches[1] || 'mp4';
+    const buffer = Buffer.from(matches[2], 'base64');
+    const filename = `demo_video_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${extension}`;
+    const filepath = path.join(UPLOADS_DIR, filename);
+
+    fs.writeFileSync(filepath, buffer);
+    const url = `/uploads/${filename}`;
+
+    return res.json({
+      success: true,
+      url,
+      message: 'Demo video uploaded successfully.',
+    });
+  } catch (err: any) {
+    console.error('Video upload error:', err);
+    return res.status(500).json({ success: false, message: err.message || 'Video upload failed.' });
+  }
+});
+
+// 13. Admin Upload Downloadable ZIP Product File
+app.post('/api/admin/upload-zip', verifyAdmin, (req: Request, res: Response) => {
+  try {
+    const { fileName, fileSize, base64, version = '2027.1 HD', fileUrl } = req.body;
+    const db = readDb();
+
+    let finalUrl = fileUrl || '';
+    if (base64 && typeof base64 === 'string') {
+      const parts = base64.split(';base64,');
+      const rawData = parts.length === 2 ? parts[1] : base64;
+      const buffer = Buffer.from(rawData, 'base64');
+      const safeName = (fileName || 'Sheru_Bhai_Viral_Reels_Bundle.zip').replace(/[^a-zA-Z0-9._-]/g, '_');
+      const filename = `zip_${Date.now()}_${safeName}`;
+      const filepath = path.join(UPLOADS_DIR, filename);
+      fs.writeFileSync(filepath, buffer);
+      finalUrl = `/uploads/${filename}`;
+    }
+
+    const newDownload = {
+      id: `dl-${Date.now()}`,
+      fileName: fileName || 'Sheru_Bhai_Viral_Reels_Master_Vault.zip',
+      fileSize: fileSize || '4.8 GB',
+      fileUrl: finalUrl || db.settings.bundleDownloadUrl,
+      uploadedAt: new Date().toISOString(),
+      version,
+    };
+
+    if (!Array.isArray(db.settings.productDownloads)) {
+      db.settings.productDownloads = [];
+    }
+    db.settings.productDownloads.unshift(newDownload);
+    if (finalUrl) {
+      db.settings.bundleDownloadUrl = finalUrl;
+    }
+    writeDb(db);
+
+    return res.json({
+      success: true,
+      file: newDownload,
+      message: 'Product download file updated successfully.',
+    });
+  } catch (err: any) {
+    console.error('ZIP upload error:', err);
+    return res.status(500).json({ success: false, message: err.message || 'ZIP upload failed.' });
+  }
+});
+
+// 14. Admin Update Settings (UPI ID, QR, Reels, Instagram, Product Images, etc.)
 app.post('/api/admin/settings', verifyAdmin, (req: Request, res: Response) => {
-  const { upiId, merchantName, supportWhatsApp, bundleDownloadUrl, instagram, demoReels, newPassword } = req.body;
+  const {
+    upiId,
+    merchantName,
+    supportWhatsApp,
+    customQrUrl,
+    bundleDownloadUrl,
+    productImages,
+    instagram,
+    demoReels,
+    productDownloads,
+    newPassword,
+  } = req.body;
   const db = readDb();
 
-  if (upiId) db.settings.upiId = String(upiId).trim();
-  if (merchantName) db.settings.merchantName = String(merchantName).trim();
-  if (supportWhatsApp) db.settings.supportWhatsApp = String(supportWhatsApp).trim();
-  if (bundleDownloadUrl) db.settings.bundleDownloadUrl = String(bundleDownloadUrl).trim();
-  if (instagram) db.settings.instagram = { ...db.settings.instagram, ...instagram };
+  if (upiId !== undefined) db.settings.upiId = String(upiId).trim();
+  if (merchantName !== undefined) db.settings.merchantName = String(merchantName).trim();
+  if (supportWhatsApp !== undefined) db.settings.supportWhatsApp = String(supportWhatsApp).trim();
+  if (customQrUrl !== undefined) db.settings.customQrUrl = String(customQrUrl).trim();
+  if (bundleDownloadUrl !== undefined) db.settings.bundleDownloadUrl = String(bundleDownloadUrl).trim();
+  if (productImages !== undefined) db.settings.productImages = { ...db.settings.productImages, ...productImages };
+  if (instagram !== undefined) db.settings.instagram = { ...db.settings.instagram, ...instagram };
   if (Array.isArray(demoReels)) db.settings.demoReels = demoReels;
+  if (Array.isArray(productDownloads)) db.settings.productDownloads = productDownloads;
+
   if (newPassword && newPassword.length >= 4) {
     db.settings.adminPasswordHash = crypto.createHash('sha256').update(newPassword.trim()).digest('hex');
   }

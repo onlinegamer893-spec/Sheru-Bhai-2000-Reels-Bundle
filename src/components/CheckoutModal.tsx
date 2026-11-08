@@ -21,6 +21,7 @@ interface CheckoutModalProps {
   onClose: () => void;
   upiId: string;
   merchantName: string;
+  customQrUrl?: string;
   onOrderSubmitted: (orderId: string, emailOrMobile: string) => void;
 }
 
@@ -29,6 +30,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   onClose,
   upiId,
   merchantName,
+  customQrUrl,
   onOrderSubmitted,
 }) => {
   const [activeTab, setActiveTab] = useState<'qr' | 'intent'>('qr');
@@ -369,8 +371,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 <div className="bg-[#121024] border border-white/10 rounded-2xl p-5 mb-8 flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
                   {/* QR Image */}
                   <div className="relative p-2.5 bg-white rounded-2xl shadow-xl shrink-0">
-                    {qrDataUrl ? (
-                      <img src={qrDataUrl} alt="UPI Payment QR Code" className="w-44 h-44 rounded-lg" />
+                    {customQrUrl || qrDataUrl ? (
+                      <img src={customQrUrl || qrDataUrl} alt="UPI Payment QR Code" className="w-44 h-44 rounded-lg object-contain" />
                     ) : (
                       <div className="w-44 h-44 bg-slate-200 animate-pulse rounded-lg flex items-center justify-center text-slate-600 text-xs">
                         Loading QR...

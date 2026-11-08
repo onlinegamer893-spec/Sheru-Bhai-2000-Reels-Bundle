@@ -17,7 +17,26 @@ export const DEFAULT_STORE_CONFIG: PublicStoreSettings = {
   upiId: 'sherubhai.reels@oksbi',
   merchantName: 'SHERU BHAI MEDIA',
   supportWhatsApp: '+919876543210',
+  customQrUrl: '',
   bundleDownloadUrl: 'https://drive.google.com/drive/folders/1SheruBhaiMasterVaultHDReelsAI',
+  productImages: {
+    coverImage: '/src/assets/images/sheru_bundle_mockup_1794107965527.jpg',
+    bundleMockup: '/src/assets/images/sheru_bundle_mockup_1794107965527.jpg',
+    promotionalImages: [
+      {
+        id: 'promo-1',
+        url: '/src/assets/images/demo_reel_royal_1794107966987.jpg',
+        caption: 'Sheru Bhai Royal Maharaja Edition',
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'promo-2',
+        url: '/src/assets/images/demo_reel_supercar_1794107967087.jpg',
+        caption: 'Luxury Midnight Beast Fleet',
+        createdAt: new Date().toISOString(),
+      },
+    ],
+  },
   instagram: {
     username: 'sherubhai.official',
     displayName: 'SHERU BHAI | King of AI Reels 👑',
@@ -26,6 +45,14 @@ export const DEFAULT_STORE_CONFIG: PublicStoreSettings = {
     postsCount: '342',
     bio: '🔥 India’s #1 AI Reels Creator\n🚀 100M+ Monthly Views\n👑 Living Royal • AI Supercars • Animal Attitude\n👇 Get 2000+ Ready Reels for ₹197 Only!',
     isVerified: true,
+    avatarUrl: '/src/assets/images/sheru_avatar_logo_1794107968916.jpg',
+    profileScreenshot: '',
+    profileUrl: 'https://instagram.com/sherubhai.official',
+    postGrid: [
+      { id: 'post-1', imageUrl: '/src/assets/images/demo_reel_royal_1794107966987.jpg', views: '22.4M', likes: '1.9M' },
+      { id: 'post-2', imageUrl: '/src/assets/images/demo_reel_supercar_1794107967087.jpg', views: '14.8M', likes: '1.2M' },
+      { id: 'post-3', imageUrl: '/src/assets/images/demo_reel_funny_lion_1794109493564.jpg', views: '18.2M', likes: '1.5M' },
+    ],
   },
   demoReels: [
     {
@@ -35,7 +62,10 @@ export const DEFAULT_STORE_CONFIG: PublicStoreSettings = {
       views: '14.8M',
       likes: '1.2M',
       thumbnailUrl: '/src/assets/images/demo_reel_supercar_1794107967087.jpg',
+      videoUrl: '',
       description: 'Futuristic matte black supercar tearing through neon rain in Dubai.',
+      active: true,
+      displayOrder: 1,
     },
     {
       id: 'demo-2',
@@ -44,7 +74,10 @@ export const DEFAULT_STORE_CONFIG: PublicStoreSettings = {
       views: '22.4M',
       likes: '1.9M',
       thumbnailUrl: '/src/assets/images/demo_reel_royal_1794107966987.jpg',
+      videoUrl: '',
       description: 'Regal Sheru Bhai on golden royal throne with high-status cinematic audio.',
+      active: true,
+      displayOrder: 2,
     },
     {
       id: 'demo-3',
@@ -53,7 +86,10 @@ export const DEFAULT_STORE_CONFIG: PublicStoreSettings = {
       views: '9.6M',
       likes: '740K',
       thumbnailUrl: '/src/assets/images/demo_reel_fitness_1794107968437.jpg',
+      videoUrl: '',
       description: 'Ultra-muscular lion dominating heavy gym sets with neon electric pump.',
+      active: true,
+      displayOrder: 3,
     },
     {
       id: 'demo-4',
@@ -62,7 +98,20 @@ export const DEFAULT_STORE_CONFIG: PublicStoreSettings = {
       views: '18.2M',
       likes: '1.5M',
       thumbnailUrl: '/src/assets/images/demo_reel_funny_lion_1794109493564.jpg',
+      videoUrl: '',
       description: 'Chilling with funny tropical animal squad on luxury beach resort.',
+      active: true,
+      displayOrder: 4,
+    },
+  ],
+  productDownloads: [
+    {
+      id: 'dl-1',
+      fileName: 'Sheru_Bhai_Viral_Reels_Master_Vault_2027.zip',
+      fileSize: '4.8 GB',
+      fileUrl: 'https://drive.google.com/drive/folders/1SheruBhaiMasterVaultHDReelsAI',
+      uploadedAt: new Date().toISOString(),
+      version: '2027.1 HD',
     },
   ],
 };
