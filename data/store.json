@@ -1,0 +1,79 @@
+{
+  "settings": {
+    "productName": "SHERU BHAI VIRAL REELS BUNDLE",
+    "originalPrice": 1199,
+    "sellingPrice": 197,
+    "discountPercentage": 84,
+    "upiId": "sherubhai.reels@oksbi",
+    "merchantName": "SHERU BHAI MEDIA",
+    "supportWhatsApp": "+919876543210",
+    "adminPasswordHash": "6bed4ecc17554cc29f9e0483847184cc7d3e06ac16f4653c865cc316001cca8d",
+    "bundleDownloadUrl": "https://drive.google.com/drive/folders/1SheruBhaiMasterVaultHDReelsAI",
+    "instagram": {
+      "username": "sherubhai.official",
+      "displayName": "SHERU BHAI | King of AI Reels 👑",
+      "followersCount": "1.4M",
+      "followingCount": "84",
+      "postsCount": "342",
+      "bio": "🔥 India’s #1 AI Reels Creator\n🚀 100M+ Monthly Views\n👑 Living Royal • AI Supercars • Animal Attitude\n👇 Get 1000+ Ready Reels for ₹197 Only!",
+      "isVerified": true
+    },
+    "demoReels": [
+      {
+        "id": "demo-1",
+        "title": "Night Rider · Supercar Beast",
+        "category": "Luxury Cars & Speed",
+        "views": "14.8M",
+        "likes": "1.2M",
+        "thumbnailUrl": "/src/assets/images/demo_reel_supercar_1794107967087.jpg",
+        "description": "Futuristic matte black supercar tearing through neon rain in Dubai."
+      },
+      {
+        "id": "demo-2",
+        "title": "Maharaja Lion King · Royal Attitude",
+        "category": "Royal Lifestyle & Attitude",
+        "views": "22.4M",
+        "likes": "1.9M",
+        "thumbnailUrl": "/src/assets/images/demo_reel_royal_1794107966987.jpg",
+        "description": "Regal Sheru Bhai on golden royal throne with high-status cinematic audio."
+      },
+      {
+        "id": "demo-3",
+        "title": "Beast Mode · Iron Never Lies",
+        "category": "High Energy Motivation",
+        "views": "9.6M",
+        "likes": "740K",
+        "thumbnailUrl": "/src/assets/images/demo_reel_fitness_1794107968437.jpg",
+        "description": "Ultra-muscular lion dominating heavy gym sets with neon electric pump."
+      }
+    ]
+  },
+  "orders": [
+    {
+      "id": "SB-8821",
+      "customerName": "Aman Sharma",
+      "email": "aman.creators@gmail.com",
+      "mobile": "9876543210",
+      "amount": 197,
+      "utr": "412389012345",
+      "screenshotUrl": "/src/assets/images/demo_reel_royal_1794107966987.jpg",
+      "status": "APPROVED",
+      "createdAt": "2026-11-07T23:26:55.636Z",
+      "updatedAt": "2026-11-07T23:38:55.636Z",
+      "approvedAt": "2026-11-07T23:38:55.636Z"
+    },
+    {
+      "id": "SB-8822",
+      "customerName": "Rohan Verma",
+      "email": "rohan.v@outlook.com",
+      "mobile": "9822114455",
+      "amount": 197,
+      "utr": "412389018899",
+      "screenshotUrl": "/src/assets/images/demo_reel_supercar_1794107967087.jpg",
+      "status": "PENDING",
+      "createdAt": "2026-11-08T02:56:55.636Z",
+      "updatedAt": "2026-11-08T02:56:55.636Z"
+    }
+  ],
+  "downloadTokens": {}
+}

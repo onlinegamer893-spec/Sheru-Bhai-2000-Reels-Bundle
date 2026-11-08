@@ -1,0 +1,6 @@
+{
+  "name": "Sheru Bhai Reels Store",
+  "description": "Ultra-premium digital store for the viral Sheru Bhai AI Reels Bundle with instant UPI payment, manual verification, and secure downloads.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
