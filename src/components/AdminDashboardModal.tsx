@@ -9,12 +9,15 @@ import {
   Eye,
   IndianRupee,
   Clock,
-  ShieldAlert,
+  ShieldCheck,
   Settings,
   RefreshCw,
   LogOut,
-  ExternalLink,
-  Filter,
+  FolderDown,
+  KeyRound,
+  Mail,
+  AlertCircle,
+  Check,
 } from 'lucide-react';
 
 interface AdminDashboardModalProps {
@@ -31,9 +34,21 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   const [authToken, setAuthToken] = useState<string | null>(
     localStorage.getItem('sb_admin_token') || null
   );
+  
+  // Login credentials state
+  const [emailInput, setEmailInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // Forgot password flow
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [resetToken, setResetToken] = useState('');
+  const [forgotStep, setForgotStep] = useState<'request' | 'reset'>('request');
+  const [forgotMessage, setForgotMessage] = useState('');
 
   // Dashboard Data
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -51,12 +66,30 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     'UTR number mismatch with bank transaction. Please enter the correct 12-digit ref number from your UPI app receipt.'
   );
 
-  // Settings tab state
-  const [activeTab, setActiveTab] = useState<'orders' | 'settings'>('orders');
+  // Navigation tabs
+  const [activeTab, setActiveTab] = useState<'orders' | 'downloads' | 'settings'>('orders');
+
+  // Product download management
+  const [bundleDownloadUrl, setBundleDownloadUrl] = useState('');
   const [merchantUpi, setMerchantUpi] = useState('sherubhai.reels@oksbi');
   const [merchantName, setMerchantName] = useState('SHERU BHAI MEDIA');
   const [supportWhatsApp, setSupportWhatsApp] = useState('+919876543210');
   const [settingsSuccessMsg, setSettingsSuccessMsg] = useState('');
+
+  // Fetch initial config for settings form
+  useEffect(() => {
+    fetch('/api/config')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.settings) {
+          setBundleDownloadUrl(data.settings.bundleDownloadUrl || '');
+          setMerchantUpi(data.settings.upiId || '');
+          setMerchantName(data.settings.merchantName || '');
+          setSupportWhatsApp(data.settings.supportWhatsApp || '');
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Load orders when authenticated
   const fetchOrders = async () => {
@@ -71,7 +104,6 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
         setStats(data.stats);
         setOrders(data.orders);
       } else {
-        // Token invalid
         setAuthToken(null);
         localStorage.removeItem('sb_admin_token');
       }
@@ -98,12 +130,15 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: passwordInput.trim() }),
+        body: JSON.stringify({
+          email: emailInput.trim(),
+          password: passwordInput.trim(),
+        }),
       });
       const data = await res.json();
 
       if (!data.success) {
-        setLoginError(data.message || 'Incorrect password.');
+        setLoginError(data.message || 'Invalid credentials.');
         setIsLoggingIn(false);
         return;
       }
@@ -113,14 +148,74 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
       setIsLoggingIn(false);
       setPasswordInput('');
     } catch (err: any) {
-      setLoginError(err.message || 'Login connection failed.');
+      setLoginError(err.message || 'Connection failed.');
       setIsLoggingIn(false);
     }
   };
 
-  const handleLogout = () => {
+  // Secure Logout
+  const handleLogout = async () => {
+    if (authToken) {
+      try {
+        await fetch('/api/admin/logout', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+      } catch (err) {}
+    }
     setAuthToken(null);
     localStorage.removeItem('sb_admin_token');
+    if (window.location.pathname.startsWith('/admin')) {
+      window.history.pushState({}, '', '/');
+    }
+  };
+
+  // Forgot password request
+  const handleRequestReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotMessage('');
+    try {
+      const res = await fetch('/api/admin/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail.trim() }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setForgotMessage(data.message || 'Email not found.');
+        return;
+      }
+      setResetToken(data.resetToken);
+      setForgotStep('reset');
+      setForgotMessage(`Reset authorized! Your one-time verification code is: ${data.resetCode}`);
+    } catch (err: any) {
+      setForgotMessage(err.message || 'Error requesting reset.');
+    }
+  };
+
+  // Submit new password
+  const handleConfirmReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/admin/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resetToken,
+          newPassword: newPassword.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setForgotMessage(data.message || 'Reset failed.');
+        return;
+      }
+      setIsForgotPassword(false);
+      setForgotStep('request');
+      setLoginError('Password reset successful! Please log in with your new credentials.');
+    } catch (err: any) {
+      setForgotMessage(err.message || 'Error setting password.');
+    }
   };
 
   // Approve payment
@@ -162,7 +257,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     }
   };
 
-  // Save admin settings
+  // Save settings & download URL
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!authToken) return;
@@ -174,6 +269,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          bundleDownloadUrl,
           upiId: merchantUpi,
           merchantName,
           supportWhatsApp,
@@ -181,19 +277,18 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
       });
       const data = await res.json();
       if (data.success) {
-        setSettingsSuccessMsg('Settings saved successfully!');
+        setSettingsSuccessMsg('Saved successfully!');
         onSettingsUpdated();
         setTimeout(() => setSettingsSuccessMsg(''), 3000);
       }
     } catch (err) {
-      console.error('Settings save failed:', err);
+      console.error('Save failed:', err);
     }
   };
 
   // Filter orders
   const filteredOrders = orders.filter((order) => {
-    const matchesStatus =
-      statusFilter === 'ALL' || order.status === statusFilter;
+    const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
     const q = searchQuery.toLowerCase().trim();
     const matchesSearch =
       !q ||
@@ -208,24 +303,24 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/90 backdrop-blur-md">
-      <div className="relative w-full max-w-5xl bg-[#0a0815] border border-purple-500/30 rounded-3xl shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-black/90 backdrop-blur-md">
+      <div className="relative w-full max-w-5xl bg-[#090714] border border-purple-500/30 rounded-3xl shadow-2xl overflow-hidden my-6 max-h-[92vh] flex flex-col">
         
         {/* Top Header */}
-        <div className="p-5 border-b border-white/10 flex items-center justify-between bg-black/40">
+        <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between bg-black/50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-purple-600/30 border border-purple-500/50 flex items-center justify-center text-purple-300">
               <Lock className="w-5 h-5 text-yellow-400" />
             </div>
             <div>
-              <h3 className="font-display font-extrabold text-lg text-white flex items-center gap-2">
+              <h3 className="font-display font-extrabold text-base sm:text-lg text-white flex items-center gap-2">
                 <span>SHERU BHAI STORE</span>
-                <span className="text-xs px-2 py-0.5 rounded bg-yellow-400/20 text-yellow-400 border border-yellow-400/30">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-yellow-400/20 text-yellow-400 border border-yellow-400/30">
                   ADMIN CONSOLE
                 </span>
               </h3>
-              <p className="text-xs text-slate-400">
-                Manual payment reconciliation, order approvals & store management
+              <p className="text-[11px] text-slate-400">
+                Payment verification queue, order approvals & vault management
               </p>
             </div>
           </div>
@@ -250,90 +345,202 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 overflow-y-auto flex-1">
+        <div className="p-5 sm:p-6 overflow-y-auto flex-1">
           {!authToken ? (
-            /* LOGIN SCREEN */
-            <div className="max-w-md mx-auto py-10 space-y-6 text-center">
+            /* LOGIN & FORGOT PASSWORD PAGES */
+            <div className="max-w-md mx-auto py-8 space-y-6 text-center">
               <div className="w-16 h-16 rounded-2xl bg-purple-600/20 border border-purple-500/40 mx-auto flex items-center justify-center text-purple-300">
                 <Lock className="w-8 h-8 text-yellow-400" />
               </div>
 
-              <div>
-                <h4 className="font-display font-bold text-2xl text-white">
-                  Restricted Administrator Access
-                </h4>
-                <p className="text-xs text-slate-400 mt-1">
-                  Enter master security key to manage customer orders & payments.
-                </p>
-              </div>
+              {!isForgotPassword ? (
+                <>
+                  <div>
+                    <h4 className="font-display font-bold text-2xl text-white">
+                      Admin Portal Login
+                    </h4>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Configure your administrator credentials securely on the server.
+                    </p>
+                  </div>
 
-              {loginError && (
-                <div className="p-3 rounded-xl bg-red-950/60 border border-red-500/40 text-red-200 text-xs">
-                  {loginError}
+                  {loginError && (
+                    <div className="p-3 rounded-xl bg-red-950/60 border border-red-500/40 text-red-200 text-xs">
+                      {loginError}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleLogin} className="space-y-4 text-left">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        Admin Email
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="admin@sherubhai.store"
+                        value={emailInput}
+                        onChange={(e) => setEmailInput(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 focus:border-purple-400 text-white text-xs focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        Admin Password
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        placeholder="Enter password"
+                        value={passwordInput}
+                        onChange={(e) => setPasswordInput(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 focus:border-purple-400 text-white text-xs focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px]">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsForgotPassword(true);
+                          setForgotMessage('');
+                        }}
+                        className="text-purple-400 hover:text-yellow-400 transition-colors"
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isLoggingIn}
+                      className="neon-btn-primary w-full py-3 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    >
+                      {isLoggingIn ? (
+                        <span>AUTHENTICATING...</span>
+                      ) : (
+                        <>
+                          <Lock className="w-4 h-4 text-yellow-400" />
+                          <span>LOGIN TO DASHBOARD</span>
+                        </>
+                      )}
+                    </button>
+                  </form>
+                </>
+              ) : (
+                /* FORGOT PASSWORD FORM */
+                <div className="space-y-4 text-left">
+                  <div>
+                    <h4 className="font-display font-bold text-xl text-white text-center">
+                      Reset Admin Password
+                    </h4>
+                    <p className="text-xs text-slate-400 text-center mt-1">
+                      Verify your registered admin email to authorize a password change.
+                    </p>
+                  </div>
+
+                  {forgotMessage && (
+                    <div className="p-3 rounded-xl bg-purple-950/60 border border-purple-500/40 text-purple-200 text-xs">
+                      {forgotMessage}
+                    </div>
+                  )}
+
+                  {forgotStep === 'request' ? (
+                    <form onSubmit={handleRequestReset} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          Registered Admin Email
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          placeholder="e.g. admin@sherubhai.store"
+                          value={forgotEmail}
+                          onChange={(e) => setForgotEmail(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        className="neon-btn-primary w-full py-2.5 rounded-xl text-xs font-bold text-white"
+                      >
+                        Request Password Reset
+                      </button>
+                    </form>
+                  ) : (
+                    <form onSubmit={handleConfirmReset} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          New Secure Password
+                        </label>
+                        <input
+                          type="password"
+                          required
+                          placeholder="Enter new strong password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white text-xs"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        className="neon-btn-primary w-full py-2.5 rounded-xl text-xs font-bold text-white"
+                      >
+                        Confirm Password Reset
+                      </button>
+                    </form>
+                  )}
+
+                  <div className="text-center pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsForgotPassword(false)}
+                      className="text-xs text-slate-400 hover:text-white"
+                    >
+                      ← Back to Login
+                    </button>
+                  </div>
                 </div>
               )}
-
-              <form onSubmit={handleLogin} className="space-y-4 text-left">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Master Admin Password
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="Enter admin password (default: sheru2026)"
-                    value={passwordInput}
-                    onChange={(e) => setPasswordInput(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/15 focus:border-purple-400 text-white text-sm focus:outline-none"
-                  />
-                  <span className="text-[11px] text-slate-500 mt-1 block">
-                    Default passkey: <code className="text-yellow-400 font-mono">sheru2026</code>
-                  </span>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoggingIn}
-                  className="neon-btn-primary w-full py-3 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  {isLoggingIn ? (
-                    <span>AUTHENTICATING...</span>
-                  ) : (
-                    <>
-                      <Lock className="w-4 h-4 text-yellow-400" />
-                      <span>UNLOCK ADMIN DASHBOARD</span>
-                    </>
-                  )}
-                </button>
-              </form>
             </div>
           ) : (
             /* ADMIN DASHBOARD CONSOLE */
             <div className="space-y-6">
               
               {/* Navigation Tabs */}
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex flex-wrap items-center justify-between border-b border-white/10 pb-4 gap-3">
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setActiveTab('orders')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       activeTab === 'orders'
                         ? 'bg-purple-600 text-white shadow-lg'
                         : 'text-slate-400 hover:text-white bg-white/5'
                     }`}
                   >
-                    Order Management
+                    1. Order Management
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('downloads')}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      activeTab === 'downloads'
+                        ? 'bg-purple-600 text-white shadow-lg'
+                        : 'text-slate-400 hover:text-white bg-white/5'
+                    }`}
+                  >
+                    <FolderDown className="w-3.5 h-3.5" />
+                    <span>2. Product Downloads</span>
                   </button>
                   <button
                     onClick={() => setActiveTab('settings')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                       activeTab === 'settings'
                         ? 'bg-purple-600 text-white shadow-lg'
                         : 'text-slate-400 hover:text-white bg-white/5'
                     }`}
                   >
                     <Settings className="w-3.5 h-3.5" />
-                    <span>Store Settings & UPI</span>
+                    <span>3. UPI & WhatsApp</span>
                   </button>
                 </div>
 
@@ -346,77 +553,76 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                 </button>
               </div>
 
+              {/* 1. ORDERS TAB */}
               {activeTab === 'orders' && (
                 <>
                   {/* METRICS ROW */}
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                    <div className="p-4 rounded-2xl glass-panel border border-white/10 text-left">
-                      <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                    <div className="p-3.5 rounded-2xl glass-panel border border-white/10 text-left">
+                      <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
                         Total Orders
                       </span>
-                      <span className="font-display font-black text-2xl text-white tabular-nums mt-1 block">
+                      <span className="font-display font-black text-xl sm:text-2xl text-white tabular-nums mt-1 block">
                         {stats?.totalOrders || 0}
                       </span>
                     </div>
 
-                    <div className="p-4 rounded-2xl glass-panel border border-yellow-500/30 text-left bg-yellow-500/[0.02]">
-                      <span className="text-[11px] font-semibold text-yellow-400 uppercase tracking-wider block">
-                        Pending Verification
+                    <div className="p-3.5 rounded-2xl glass-panel border border-yellow-500/30 text-left bg-yellow-500/[0.02]">
+                      <span className="text-[10px] font-semibold text-yellow-400 uppercase tracking-wider block">
+                        Pending Payments
                       </span>
-                      <span className="font-display font-black text-2xl text-yellow-400 tabular-nums mt-1 block">
+                      <span className="font-display font-black text-xl sm:text-2xl text-yellow-400 tabular-nums mt-1 block">
                         {stats?.pendingOrders || 0}
                       </span>
                     </div>
 
-                    <div className="p-4 rounded-2xl glass-panel border border-emerald-500/30 text-left bg-emerald-500/[0.02]">
-                      <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider block">
+                    <div className="p-3.5 rounded-2xl glass-panel border border-emerald-500/30 text-left bg-emerald-500/[0.02]">
+                      <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider block">
                         Approved Payments
                       </span>
-                      <span className="font-display font-black text-2xl text-emerald-400 tabular-nums mt-1 block">
+                      <span className="font-display font-black text-xl sm:text-2xl text-emerald-400 tabular-nums mt-1 block">
                         {stats?.approvedOrders || 0}
                       </span>
                     </div>
 
-                    <div className="p-4 rounded-2xl glass-panel border border-red-500/30 text-left bg-red-500/[0.02]">
-                      <span className="text-[11px] font-semibold text-red-400 uppercase tracking-wider block">
-                        Rejected
+                    <div className="p-3.5 rounded-2xl glass-panel border border-red-500/30 text-left bg-red-500/[0.02]">
+                      <span className="text-[10px] font-semibold text-red-400 uppercase tracking-wider block">
+                        Rejected Payments
                       </span>
-                      <span className="font-display font-black text-2xl text-red-400 tabular-nums mt-1 block">
+                      <span className="font-display font-black text-xl sm:text-2xl text-red-400 tabular-nums mt-1 block">
                         {stats?.rejectedOrders || 0}
                       </span>
                     </div>
 
-                    <div className="p-4 rounded-2xl glass-panel-glow border border-purple-500/30 text-left col-span-2 sm:col-span-1">
-                      <span className="text-[11px] font-semibold text-purple-300 uppercase tracking-wider block">
+                    <div className="p-3.5 rounded-2xl glass-panel-glow border border-purple-500/30 text-left col-span-2 sm:col-span-1">
+                      <span className="text-[10px] font-semibold text-purple-300 uppercase tracking-wider block">
                         Confirmed Sales
                       </span>
-                      <span className="font-display font-black text-2xl text-white tabular-nums mt-1 block">
+                      <span className="font-display font-black text-xl sm:text-2xl text-white tabular-nums mt-1 block">
                         ₹{(stats?.totalSales || 0).toLocaleString('en-IN')}
                       </span>
                     </div>
                   </div>
 
-                  {/* SEARCH & FILTER CONTROLS */}
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-                    {/* Search Bar */}
+                  {/* SEARCH & FILTER */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                     <div className="relative flex-1">
-                      <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
                       <input
                         type="text"
                         placeholder="Search by Order ID, Name, Mobile, Email, or UTR..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-white text-xs focus:outline-none focus:border-purple-400"
+                        className="w-full pl-10 pr-4 py-2 rounded-xl bg-white/[0.03] border border-white/10 text-white text-xs focus:outline-none focus:border-purple-400"
                       />
                     </div>
 
-                    {/* Status Tabs */}
-                    <div className="flex items-center gap-1 p-1 bg-white/[0.03] rounded-xl border border-white/10">
+                    <div className="flex items-center gap-1 p-1 bg-white/[0.03] rounded-xl border border-white/10 self-start sm:self-auto">
                       {(['ALL', 'PENDING', 'APPROVED', 'REJECTED'] as const).map((filter) => (
                         <button
                           key={filter}
                           onClick={() => setStatusFilter(filter)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                             statusFilter === filter
                               ? 'bg-purple-600 text-white shadow-sm'
                               : 'text-slate-400 hover:text-white'
@@ -428,19 +634,19 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                     </div>
                   </div>
 
-                  {/* ORDERS MANAGEMENT TABLE */}
+                  {/* ORDERS TABLE */}
                   <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
                     <div className="overflow-x-auto">
                       <table className="w-full text-left border-collapse text-xs">
                         <thead>
-                          <tr className="bg-white/[0.03] border-b border-white/10 text-slate-400 uppercase tracking-wider">
-                            <th className="py-3.5 px-4 font-bold">Order ID</th>
-                            <th className="py-3.5 px-4 font-bold">Customer</th>
-                            <th className="py-3.5 px-4 font-bold">Amount</th>
-                            <th className="py-3.5 px-4 font-bold">UTR / Ref</th>
-                            <th className="py-3.5 px-4 font-bold">Screenshot</th>
-                            <th className="py-3.5 px-4 font-bold">Status</th>
-                            <th className="py-3.5 px-4 font-bold text-right">Action</th>
+                          <tr className="bg-white/[0.03] border-b border-white/10 text-slate-400 uppercase tracking-wider text-[11px]">
+                            <th className="py-3 px-4 font-bold">Order ID</th>
+                            <th className="py-3 px-4 font-bold">Customer Details</th>
+                            <th className="py-3 px-4 font-bold">Amount</th>
+                            <th className="py-3 px-4 font-bold">UTR Number</th>
+                            <th className="py-3 px-4 font-bold">Receipt</th>
+                            <th className="py-3 px-4 font-bold">Status</th>
+                            <th className="py-3 px-4 font-bold text-right">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -453,40 +659,29 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                           ) : (
                             filteredOrders.map((order) => (
                               <tr key={order.id} className="hover:bg-white/[0.02] transition-colors">
-                                {/* Order ID */}
-                                <td className="py-3.5 px-4 font-mono font-bold text-yellow-400">
+                                <td className="py-3 px-4 font-mono font-bold text-yellow-400">
                                   {order.id}
                                 </td>
-
-                                {/* Customer info */}
-                                <td className="py-3.5 px-4">
+                                <td className="py-3 px-4">
                                   <div className="font-semibold text-white">{order.customerName}</div>
                                   <div className="text-[11px] text-slate-400">{order.mobile}</div>
-                                  <div className="text-[11px] text-purple-300 truncate max-w-[140px]">
-                                    {order.email}
-                                  </div>
+                                  <div className="text-[11px] text-purple-300 truncate max-w-[140px]">{order.email}</div>
                                 </td>
-
-                                {/* Amount */}
-                                <td className="py-3.5 px-4 font-bold text-white tabular-nums">
+                                <td className="py-3 px-4 font-bold text-white tabular-nums">
                                   ₹{order.amount}
                                 </td>
-
-                                {/* UTR */}
-                                <td className="py-3.5 px-4 font-mono text-slate-300">
+                                <td className="py-3 px-4 font-mono text-slate-300">
                                   {order.utr}
                                 </td>
-
-                                {/* Screenshot thumbnail */}
-                                <td className="py-3.5 px-4">
+                                <td className="py-3 px-4">
                                   {order.screenshotUrl ? (
                                     <button
                                       onClick={() => setPreviewScreenshotUrl(order.screenshotUrl)}
-                                      className="relative group w-10 h-10 rounded-lg overflow-hidden border border-white/20 bg-black flex items-center justify-center cursor-pointer"
+                                      className="relative group w-9 h-9 rounded-lg overflow-hidden border border-white/20 bg-black flex items-center justify-center cursor-pointer"
                                     >
                                       <img
                                         src={order.screenshotUrl}
-                                        alt="Payment receipt thumbnail"
+                                        alt="Receipt"
                                         className="w-full h-full object-cover"
                                       />
                                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
@@ -494,49 +689,44 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                                       </div>
                                     </button>
                                   ) : (
-                                    <span className="text-slate-600 text-[11px]">No image</span>
+                                    <span className="text-slate-600 text-[10px]">None</span>
                                   )}
                                 </td>
-
-                                {/* Status */}
-                                <td className="py-3.5 px-4">
+                                <td className="py-3 px-4">
                                   {order.status === 'APPROVED' && (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold text-[11px]">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold text-[10px]">
                                       <CheckCircle2 className="w-3 h-3" />
                                       <span>APPROVED</span>
                                     </span>
                                   )}
                                   {order.status === 'PENDING' && (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 font-bold text-[11px]">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 font-bold text-[10px]">
                                       <Clock className="w-3 h-3" />
                                       <span>PENDING</span>
                                     </span>
                                   )}
                                   {order.status === 'REJECTED' && (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-red-500/10 text-red-400 border border-red-500/30 font-bold text-[11px]">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-500/10 text-red-400 border border-red-500/30 font-bold text-[10px]">
                                       <XCircle className="w-3 h-3" />
                                       <span>REJECTED</span>
                                     </span>
                                   )}
                                 </td>
-
-                                {/* Actions */}
-                                <td className="py-3.5 px-4 text-right">
+                                <td className="py-3 px-4 text-right">
                                   <div className="flex items-center justify-end gap-2">
                                     {order.status !== 'APPROVED' && (
                                       <button
                                         onClick={() => handleApprove(order.id)}
-                                        className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] flex items-center gap-1 cursor-pointer transition-colors shadow-sm"
+                                        className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] flex items-center gap-1 cursor-pointer shadow-sm"
                                       >
                                         <CheckCircle2 className="w-3 h-3" />
                                         <span>Approve</span>
                                       </button>
                                     )}
-
                                     {order.status !== 'REJECTED' && (
                                       <button
                                         onClick={() => setRejectOrderId(order.id)}
-                                        className="px-3 py-1.5 rounded-lg bg-red-600/30 hover:bg-red-600/50 border border-red-500/40 text-red-200 font-bold text-[11px] flex items-center gap-1 cursor-pointer transition-colors"
+                                        className="px-2.5 py-1 rounded-lg bg-red-600/30 hover:bg-red-600/50 border border-red-500/40 text-red-200 font-bold text-[11px] flex items-center gap-1 cursor-pointer"
                                       >
                                         <XCircle className="w-3 h-3" />
                                         <span>Reject</span>
@@ -554,15 +744,15 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                 </>
               )}
 
-              {/* SETTINGS TAB */}
-              {activeTab === 'settings' && (
-                <div className="max-w-2xl bg-white/[0.02] border border-white/10 rounded-2xl p-6 text-left space-y-6">
+              {/* 2. PRODUCT DOWNLOAD MANAGEMENT TAB */}
+              {activeTab === 'downloads' && (
+                <div className="max-w-2xl bg-white/[0.02] border border-white/10 rounded-2xl p-6 text-left space-y-5">
                   <div>
                     <h4 className="font-display font-bold text-lg text-white">
-                      Store Payment & WhatsApp Configuration
+                      Product Download Vault Management
                     </h4>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Change merchant UPI receiver and support numbers in real time.
+                      Configure the official Google Drive Master Link delivered to customers once their ₹197 payment is approved.
                     </p>
                   </div>
 
@@ -575,7 +765,50 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                   <form onSubmit={handleSaveSettings} className="space-y-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-300 mb-1">
-                        Merchant UPI ID (e.g. sherubhai@oksbi)
+                        Master Google Drive Vault Folder Link
+                      </label>
+                      <input
+                        type="url"
+                        required
+                        value={bundleDownloadUrl}
+                        onChange={(e) => setBundleDownloadUrl(e.target.value)}
+                        placeholder="https://drive.google.com/drive/folders/..."
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 focus:border-purple-400 text-white font-mono text-xs"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="neon-btn-primary px-6 py-2.5 rounded-xl text-xs font-black text-white cursor-pointer"
+                    >
+                      UPDATE DOWNLOAD LINKS
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {/* 3. SETTINGS TAB */}
+              {activeTab === 'settings' && (
+                <div className="max-w-2xl bg-white/[0.02] border border-white/10 rounded-2xl p-6 text-left space-y-5">
+                  <div>
+                    <h4 className="font-display font-bold text-lg text-white">
+                      UPI Merchant & WhatsApp Configuration
+                    </h4>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Configure your receiving UPI ID and support contact.
+                    </p>
+                  </div>
+
+                  {settingsSuccessMsg && (
+                    <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-200 text-xs">
+                      {settingsSuccessMsg}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSaveSettings} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        Merchant UPI ID (for QR and Intent)
                       </label>
                       <input
                         type="text"
@@ -601,7 +834,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-300 mb-1">
-                        Customer Support WhatsApp (+91...)
+                        Support WhatsApp Number
                       </label>
                       <input
                         type="text"
@@ -654,13 +887,13 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 onClick={() => setRejectOrderId(null)}
-                className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-300"
+                className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-300 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmReject}
-                className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold"
+                className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold cursor-pointer"
               >
                 Confirm Rejection
               </button>

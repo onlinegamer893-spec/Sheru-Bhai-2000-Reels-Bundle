@@ -5,6 +5,7 @@ export const ASSET_IMAGES = {
   supercarReel: '/src/assets/images/demo_reel_supercar_1794107967087.jpg',
   royalReel: '/src/assets/images/demo_reel_royal_1794107966987.jpg',
   fitnessReel: '/src/assets/images/demo_reel_fitness_1794107968437.jpg',
+  funnyLionReel: '/src/assets/images/demo_reel_funny_lion_1794109493564.jpg',
   avatarLogo: '/src/assets/images/sheru_avatar_logo_1794107968916.jpg',
 };
 
@@ -12,7 +13,7 @@ export const DEFAULT_STORE_CONFIG: PublicStoreSettings = {
   productName: 'SHERU BHAI VIRAL REELS BUNDLE',
   originalPrice: 1199,
   sellingPrice: 197,
-  discountPercentage: 84,
+  discountPercentage: 80,
   upiId: 'sherubhai.reels@oksbi',
   merchantName: 'SHERU BHAI MEDIA',
   supportWhatsApp: '+919876543210',
@@ -23,36 +24,45 @@ export const DEFAULT_STORE_CONFIG: PublicStoreSettings = {
     followersCount: '1.4M',
     followingCount: '84',
     postsCount: '342',
-    bio: '🔥 India’s #1 AI Reels Creator\n🚀 100M+ Monthly Views\n👑 Living Royal • AI Supercars • Animal Attitude\n👇 Get 1000+ Ready Reels for ₹197 Only!',
+    bio: '🔥 India’s #1 AI Reels Creator\n🚀 100M+ Monthly Views\n👑 Living Royal • AI Supercars • Animal Attitude\n👇 Get 2000+ Ready Reels for ₹197 Only!',
     isVerified: true,
   },
   demoReels: [
     {
       id: 'demo-1',
       title: 'Night Rider · Supercar Beast',
-      category: 'Luxury Cars & Speed',
+      category: 'Luxury Cars',
       views: '14.8M',
       likes: '1.2M',
-      thumbnailUrl: ASSET_IMAGES.supercarReel,
+      thumbnailUrl: '/src/assets/images/demo_reel_supercar_1794107967087.jpg',
       description: 'Futuristic matte black supercar tearing through neon rain in Dubai.',
     },
     {
       id: 'demo-2',
       title: 'Maharaja Lion King · Royal Attitude',
-      category: 'Royal Lifestyle & Attitude',
+      category: 'Royal Lifestyle',
       views: '22.4M',
       likes: '1.9M',
-      thumbnailUrl: ASSET_IMAGES.royalReel,
+      thumbnailUrl: '/src/assets/images/demo_reel_royal_1794107966987.jpg',
       description: 'Regal Sheru Bhai on golden royal throne with high-status cinematic audio.',
     },
     {
       id: 'demo-3',
       title: 'Beast Mode · Iron Never Lies',
-      category: 'High Energy Motivation',
+      category: 'Fitness & Attitude',
       views: '9.6M',
       likes: '740K',
-      thumbnailUrl: ASSET_IMAGES.fitnessReel,
+      thumbnailUrl: '/src/assets/images/demo_reel_fitness_1794107968437.jpg',
       description: 'Ultra-muscular lion dominating heavy gym sets with neon electric pump.',
+    },
+    {
+      id: 'demo-4',
+      title: 'Tropical Squad · Vacation King',
+      category: 'Funny Animals',
+      views: '18.2M',
+      likes: '1.5M',
+      thumbnailUrl: '/src/assets/images/demo_reel_funny_lion_1794109493564.jpg',
+      description: 'Chilling with funny tropical animal squad on luxury beach resort.',
     },
   ],
 };
@@ -123,6 +133,50 @@ export const TESTIMONIALS = [
   },
 ];
 
+export const CREATOR_BONUSES = [
+  {
+    title: 'Bonus #1: Viral Audio Vault (100+ Links)',
+    value: '₹3,499',
+    description: 'Instant 1-tap links to trending Instagram audio tracks that the algorithm is actively boosting right now.',
+  },
+  {
+    title: 'Bonus #2: 0 to 1M Followers Blueprint PDF',
+    value: '₹4,999',
+    description: 'The step-by-step posting schedule, hashtag strategy, and audience retention secrets used by Sheru Bhai.',
+  },
+  {
+    title: 'Bonus #3: 500+ Indian Viral Hashtags Bank',
+    value: '₹1,999',
+    description: 'Copy-paste high-performing hashtags categorized by niche (Royal, Cars, Motivation, Swag, Comedy).',
+  },
+  {
+    title: 'Bonus #4: Lifetime Master Vault Updates',
+    value: '₹2,500',
+    description: 'Automatic access to all newly rendered Sheru Bhai reels added each month directly in your Google Drive.',
+  },
+];
+
+export const TARGET_AUDIENCE = [
+  { title: 'Content Creators', desc: 'Grow your personal brand and explosive engagement without spending hours recording.' },
+  { title: 'Theme Page Owners', desc: 'Build automated faceless pages that pull millions of organic views and monetization.' },
+  { title: 'Digital Marketers & Agencies', desc: 'Provide viral reels content to clients in fitness, luxury, motivation, and lifestyle.' },
+  { title: 'Entrepreneurs & Students', desc: 'Start a high-growth side hustle and monetize through sponsorships and brand deals.' },
+];
+
+export const UPLOAD_PLATFORMS = [
+  { name: 'Instagram Reels', badge: '1080x1920 HD', ratio: '9:16' },
+  { name: 'YouTube Shorts', badge: 'High Retention', ratio: '9:16' },
+  { name: 'Facebook Reels', badge: 'Massive Reach', ratio: '9:16' },
+  { name: 'TikTok & Moj', badge: 'Trending Audio', ratio: '9:16' },
+];
+
+export const MONETIZATION_METHODS = [
+  { step: '01', title: 'Brand Sponsorships', desc: 'Charge ₹5,000 to ₹50,000 per sponsored reel once your page reaches 20k+ followers.' },
+  { step: '02', title: 'Affiliate Marketing', desc: 'Promote fitness, luxury, or tech products in your bio link and earn high commissions.' },
+  { step: '03', title: 'Sell Digital Products', desc: 'Sell your own e-books, bundles, or courses to your highly engaged, loyal audience.' },
+  { step: '04', title: 'Theme Page Flipping', desc: 'Scale faceless pages to 50k–100k followers and resell them for lucrative payouts.' },
+];
+
 export const FAQS = [
   {
     question: 'How do I receive the reels after paying ₹197?',
@@ -149,3 +203,4 @@ export const FAQS = [
     answer: 'You can check your live order status anytime in our Track Order portal using your Order ID and mobile number. If there is a typo in your UTR, our system displays the reason and gives you a 1-click option to resubmit correct proof.',
   },
 ];
+

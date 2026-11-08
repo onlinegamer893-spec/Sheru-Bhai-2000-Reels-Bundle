@@ -8,10 +8,9 @@ import { DEFAULT_STORE_CONFIG } from './constants';
 import { PublicStoreSettings } from './types';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
-import { FeaturesSection } from './components/FeaturesSection';
 import { DemoReelsSection } from './components/DemoReelsSection';
 import { InstagramDemoSection } from './components/InstagramDemoSection';
-import { WhyChooseUsSection } from './components/WhyChooseUsSection';
+import { CreatorSections } from './components/CreatorSections';
 import { TestimonialsSection } from './components/TestimonialsSection';
 import { FaqSection } from './components/FaqSection';
 import { Footer } from './components/Footer';
@@ -35,6 +34,14 @@ export default function App() {
     orderId: '',
     auth: '',
   });
+
+  // Check URL on mount for /admin/login or /admin route
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path === '/admin/login' || path === '/admin') {
+      setIsAdminOpen(true);
+    }
+  }, []);
 
   // Load live store config from backend
   const loadConfig = async () => {
@@ -66,17 +73,29 @@ export default function App() {
     setIsLegalOpen(true);
   };
 
+  const handleOpenAdmin = () => {
+    window.history.pushState({}, '', '/admin/login');
+    setIsAdminOpen(true);
+  };
+
+  const handleCloseAdmin = () => {
+    if (window.location.pathname.startsWith('/admin')) {
+      window.history.pushState({}, '', '/');
+    }
+    setIsAdminOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-[#050509] text-slate-100 flex flex-col font-sans selection:bg-purple-600 selection:text-white">
-      {/* Navigation Top Bar */}
+      {/* Top Flash Sale Announcement Bar & Header */}
       <Navbar
         onOpenCheckout={() => setIsCheckoutOpen(true)}
         onOpenTrack={() => setIsTrackOpen(true)}
-        onOpenAdmin={() => setIsAdminOpen(true)}
+        onOpenAdmin={handleOpenAdmin}
       />
 
       <main className="flex-1">
-        {/* 1. Hero Section with 3D Bundle Mockup & ₹197 CTA */}
+        {/* 1. Main Hero Section (2027 Edition, Cover on Left, 11 Bullets, Rating & ₹197 Offer Card) */}
         <HeroSection
           onBuyClick={() => setIsCheckoutOpen(true)}
           onExploreDemos={() => {
@@ -85,36 +104,33 @@ export default function App() {
           }}
         />
 
-        {/* 2. Product Features & Content Breakdown */}
-        <FeaturesSection onBuyClick={() => setIsCheckoutOpen(true)} />
-
-        {/* 3. Demo Reels Section with Vertical 9:16 Cards */}
+        {/* 2. Product Demo (DEMO REELS VIDEOS 🔥 - 4 Thumbnails side-by-side, mobile scrollable) */}
         <DemoReelsSection
           demoReels={storeConfig.demoReels}
           onBuyClick={() => setIsCheckoutOpen(true)}
         />
 
-        {/* 4. Instagram Profile & Engagement Proof (Side-by-Side) */}
+        {/* 3. Instagram ID Demo (Profile Mockup & Reel Grid Side-by-Side) */}
         <InstagramDemoSection
           instagram={storeConfig.instagram}
           onBuyClick={() => setIsCheckoutOpen(true)}
         />
 
-        {/* 5. Quality Comparison (Sheru Bhai vs Others) */}
-        <WhyChooseUsSection onBuyClick={() => setIsCheckoutOpen(true)} />
+        {/* 4. Concise Creator Sections (Bonuses Worth ₹12K, Who Is It For, Where To Upload, How To Make Money) */}
+        <CreatorSections onBuyClick={() => setIsCheckoutOpen(true)} />
 
-        {/* 6. Creator Testimonials */}
+        {/* 5. Customer Reviews (Clean Verified Proof) */}
         <TestimonialsSection />
 
-        {/* 7. FAQs & WhatsApp Help */}
+        {/* 6. Simple FAQ Accordion */}
         <FaqSection supportWhatsApp={storeConfig.supportWhatsApp} />
       </main>
 
-      {/* Footer & Floating WhatsApp */}
+      {/* Footer with Policies, Contact Us, and Admin Login */}
       <Footer
         supportWhatsApp={storeConfig.supportWhatsApp}
         onOpenLegal={handleOpenLegal}
-        onOpenAdmin={() => setIsAdminOpen(true)}
+        onOpenAdmin={handleOpenAdmin}
         onOpenTrack={() => setIsTrackOpen(true)}
       />
 
@@ -135,10 +151,10 @@ export default function App() {
         initialAuth={trackingPrefill.auth}
       />
 
-      {/* Admin Dashboard Modal */}
+      {/* Admin Dashboard / Login Page (/admin/login) */}
       <AdminDashboardModal
         isOpen={isAdminOpen}
-        onClose={() => setIsAdminOpen(false)}
+        onClose={handleCloseAdmin}
         onSettingsUpdated={loadConfig}
       />
 

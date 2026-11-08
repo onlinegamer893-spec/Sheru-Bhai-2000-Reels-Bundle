@@ -1,7 +1,7 @@
 import React from 'react';
 import { InstagramProfile } from '../types';
 import { ASSET_IMAGES } from '../constants';
-import { BadgeCheck, Play, Heart, MessageCircle, Bookmark, ExternalLink, Sparkles } from 'lucide-react';
+import { BadgeCheck, Play, ArrowRight } from 'lucide-react';
 
 interface InstagramDemoSectionProps {
   instagram: InstagramProfile;
@@ -10,241 +10,157 @@ interface InstagramDemoSectionProps {
 
 export const InstagramDemoSection: React.FC<InstagramDemoSectionProps> = ({ instagram, onBuyClick }) => {
   return (
-    <section id="instagram-proof" className="py-20 relative border-t border-white/5">
+    <section id="instagram-proof" className="py-14 relative border-t border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-indigo-500/20 border border-pink-500/30 text-pink-300 text-xs font-bold uppercase tracking-wider mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
-            <span>REAL VIRAL PROOF</span>
-          </div>
-          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight mb-4">
+        {/* Section Title */}
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight">
             SEE OUR INSTAGRAM PAGE DEMO
           </h2>
-          <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-            See how our official brand page reached over <strong>1,400,000+ followers</strong> using the exact same HD AI Lion & Luxury Supercar reels you get in this bundle.
+          <p className="text-slate-400 text-xs sm:text-sm mt-1">
+            Real performance from our official 1.4M+ follower creator page.
           </p>
         </div>
 
-        {/* Side-by-Side Dual Panels (Stacks vertically on mobile) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Side-by-Side Dual Panels (Stack vertically on mobile) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* LEFT PANEL: Instagram Profile Card */}
-          <div className="lg:col-span-6 glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-pink-500/10 via-purple-500/10 to-transparent blur-3xl pointer-events-none" />
-
-            {/* Profile Header Bar */}
-            <div className="flex items-center justify-between pb-6 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <span className="text-xs uppercase font-extrabold tracking-widest text-slate-400">
-                  OFFICIAL CREATOR PROFILE
-                </span>
-              </div>
-              <span className="px-2.5 py-1 rounded-md bg-white/5 text-[11px] text-slate-300 font-mono">
-                @ {instagram.username}
+          {/* LEFT PANEL: Instagram Profile Mockup */}
+          <div className="lg:col-span-6 glass-panel rounded-2xl p-5 border border-white/10 shadow-xl text-left">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10 text-xs">
+              <span className="font-bold text-slate-400 uppercase tracking-wider">
+                INSTAGRAM PROFILE MOCKUP
+              </span>
+              <span className="font-mono text-purple-400 font-bold">
+                @{instagram.username}
               </span>
             </div>
 
-            {/* Profile Info */}
-            <div className="pt-6 flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
-              {/* Profile Avatar */}
-              <div className="relative w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 shadow-xl shrink-0">
-                <div className="w-full h-full rounded-full overflow-hidden border-2 border-black bg-black">
-                  <img
-                    src={ASSET_IMAGES.avatarLogo}
-                    alt={instagram.displayName}
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+            {/* Profile Header Details */}
+            <div className="pt-4 flex items-center gap-4">
+              <div className="relative w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 shrink-0">
+                <img
+                  src={ASSET_IMAGES.avatarLogo}
+                  alt={instagram.displayName}
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full rounded-full object-cover border-2 border-black"
+                />
               </div>
 
-              {/* Stats & Username */}
               <div className="flex-1">
-                <div className="flex items-center justify-center sm:justify-start gap-2 mb-3">
-                  <h3 className="font-display font-bold text-xl text-white">
-                    {instagram.username}
-                  </h3>
-                  {instagram.isVerified && (
-                    <BadgeCheck className="w-5 h-5 text-blue-400 fill-blue-400" />
-                  )}
+                <div className="flex items-center gap-1.5">
+                  <span className="font-display font-bold text-base text-white">{instagram.username}</span>
+                  {instagram.isVerified && <BadgeCheck className="w-4 h-4 text-blue-400 fill-blue-400" />}
                 </div>
 
-                {/* Follower Stats */}
-                <div className="grid grid-cols-3 gap-4 py-3 border-y border-white/5 text-center my-3">
-                  <div>
-                    <span className="block font-display font-black text-white text-lg tabular-nums">
-                      {instagram.postsCount}
-                    </span>
-                    <span className="text-[11px] text-slate-400">Posts</span>
-                  </div>
-                  <div>
-                    <span className="block font-display font-black text-yellow-400 text-lg tabular-nums">
-                      {instagram.followersCount}
-                    </span>
-                    <span className="text-[11px] text-slate-400">Followers</span>
-                  </div>
-                  <div>
-                    <span className="block font-display font-black text-white text-lg tabular-nums">
-                      {instagram.followingCount}
-                    </span>
-                    <span className="text-[11px] text-slate-400">Following</span>
-                  </div>
-                </div>
-
-                {/* Display Name & Bio */}
-                <div className="text-left mt-3">
-                  <div className="font-bold text-sm text-white mb-1">
-                    {instagram.displayName}
-                  </div>
-                  <p className="text-xs text-slate-300 whitespace-pre-line leading-relaxed">
-                    {instagram.bio}
-                  </p>
+                <div className="flex items-center gap-4 text-xs mt-1">
+                  <div><strong className="text-white">{instagram.postsCount}</strong> <span className="text-slate-400">posts</span></div>
+                  <div><strong className="text-yellow-400">{instagram.followersCount}</strong> <span className="text-slate-400">followers</span></div>
+                  <div><strong className="text-white">{instagram.followingCount}</strong> <span className="text-slate-400">following</span></div>
                 </div>
               </div>
             </div>
 
-            {/* Story Highlights Circles */}
-            <div className="mt-6 pt-4 border-t border-white/5 flex items-center gap-4 overflow-x-auto pb-2 no-scrollbar">
-              {[
-                { label: 'Viral Proof', emoji: '🔥' },
-                { label: '1M Master', emoji: '👑' },
-                { label: 'Supercars', emoji: '🏎️' },
-                { label: 'Reviews', emoji: '⭐' },
-              ].map((hl, i) => (
-                <div key={i} className="flex flex-col items-center gap-1.5 shrink-0">
-                  <div className="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center">
-                    <div className="w-full h-full rounded-full bg-[#131122] border-2 border-black flex items-center justify-center text-lg">
-                      {hl.emoji}
-                    </div>
-                  </div>
-                  <span className="text-[11px] text-slate-400">{hl.label}</span>
-                </div>
-              ))}
+            {/* Bio */}
+            <div className="mt-3 text-xs text-slate-300 whitespace-pre-line leading-relaxed">
+              {instagram.bio}
             </div>
 
-            {/* Profile 3x3 Mini Grid Preview */}
-            <div className="mt-6 pt-4 border-t border-white/5">
-              <span className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold block mb-3">
-                RECENT POSTS & REELS
-              </span>
+            {/* 3-Thumbnail Reel Grid */}
+            <div className="mt-4 pt-3 border-t border-white/5">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                REELS GRID
+              </div>
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { img: ASSET_IMAGES.royalReel, views: '22.4M' },
                   { img: ASSET_IMAGES.supercarReel, views: '14.8M' },
-                  { img: ASSET_IMAGES.fitnessReel, views: '9.6M' },
-                ].map((post, i) => (
-                  <div key={i} className="relative aspect-square rounded-xl overflow-hidden bg-black group cursor-pointer">
+                  { img: ASSET_IMAGES.funnyLionReel, views: '18.2M' },
+                ].map((item, i) => (
+                  <div key={i} className="relative aspect-square rounded-xl overflow-hidden bg-black group">
                     <img
-                      src={post.img}
-                      alt="Profile post thumbnail"
+                      src={item.img}
+                      alt="Reel preview"
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="flex items-center gap-1 text-white text-xs font-bold">
-                        <Play className="w-3.5 h-3.5 fill-white" />
-                        <span>{post.views}</span>
+                        <Play className="w-3 h-3 fill-white" />
+                        <span>{item.views}</span>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-
           </div>
 
-          {/* RIGHT PANEL: High-Virality Reels Showcase & Engagement */}
-          <div className="lg:col-span-6 glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl flex flex-col justify-between">
+          {/* RIGHT PANEL: Viral Analytics Case Study */}
+          <div className="lg:col-span-6 glass-panel rounded-2xl p-5 border border-white/10 shadow-xl text-left flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between pb-6 border-b border-white/10 mb-6">
-                <span className="text-xs uppercase font-extrabold tracking-widest text-slate-400">
-                  VIRAL ENGAGEMENT ANALYTICS
+              <div className="flex items-center justify-between pb-4 border-b border-white/10 text-xs">
+                <span className="font-bold text-slate-400 uppercase tracking-wider">
+                  VIRAL REEL PERFORMANCE
                 </span>
-                <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>100% Organic Reach</span>
-                </span>
+                <span className="text-emerald-400 font-bold">100% Organic</span>
               </div>
 
-              {/* Spotlight Reel Highlight */}
-              <div className="relative rounded-2xl overflow-hidden glass-panel-glow border border-purple-500/30 p-4 mb-6">
-                <div className="flex flex-col sm:flex-row gap-5 items-center">
-                  <div className="relative w-36 aspect-[9/16] rounded-xl overflow-hidden bg-black shrink-0 border border-white/10 shadow-lg">
-                    <img
-                      src={ASSET_IMAGES.royalReel}
-                      alt="Spotlight Viral Reel"
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-black text-yellow-400">
-                      TOP REEL
-                    </div>
+              {/* Spotlight Card */}
+              <div className="mt-4 p-4 rounded-xl bg-purple-950/20 border border-purple-500/30 flex gap-4 items-center">
+                <div className="relative w-24 aspect-[9/16] rounded-lg overflow-hidden bg-black shrink-0 border border-white/10">
+                  <img
+                    src={ASSET_IMAGES.royalReel}
+                    alt="Viral Reel Spotlight"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1 space-y-1.5 text-xs">
+                  <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest block">
+                    SAMPLE VIRAL METRICS
+                  </span>
+                  <h4 className="font-display font-bold text-white text-sm">
+                    Maharaja Lion Attitude Reel
+                  </h4>
+                  <div className="flex justify-between border-b border-white/5 py-0.5">
+                    <span className="text-slate-400">Total Views:</span>
+                    <strong className="text-yellow-400 font-black">22,481,902</strong>
                   </div>
-
-                  <div className="text-left flex-1">
-                    <span className="text-[11px] font-bold text-purple-400 uppercase tracking-wider block">
-                      CASE STUDY: REEL #042
-                    </span>
-                    <h4 className="font-display text-lg font-bold text-white mb-2">
-                      Maharaja Lion Royal Attitude
-                    </h4>
-                    
-                    <div className="space-y-2 text-xs text-slate-300">
-                      <div className="flex items-center justify-between py-1 border-b border-white/5">
-                        <span className="text-slate-400">Total Views:</span>
-                        <strong className="text-yellow-400 font-black tabular-nums">22,481,902 Views</strong>
-                      </div>
-                      <div className="flex items-center justify-between py-1 border-b border-white/5">
-                        <span className="text-slate-400">Likes:</span>
-                        <strong className="text-white font-bold tabular-nums">1,940,210 Likes</strong>
-                      </div>
-                      <div className="flex items-center justify-between py-1 border-b border-white/5">
-                        <span className="text-slate-400">Saves / Bookmarks:</span>
-                        <strong className="text-purple-300 font-bold tabular-nums">412,800 Saves</strong>
-                      </div>
-                      <div className="flex items-center justify-between py-1">
-                        <span className="text-slate-400">Followers Gained:</span>
-                        <strong className="text-emerald-400 font-bold tabular-nums">+48,200 New Followers</strong>
-                      </div>
-                    </div>
+                  <div className="flex justify-between border-b border-white/5 py-0.5">
+                    <span className="text-slate-400">Total Likes:</span>
+                    <strong className="text-white">1,940,210</strong>
+                  </div>
+                  <div className="flex justify-between py-0.5">
+                    <span className="text-slate-400">Saves / Bookmarks:</span>
+                    <strong className="text-purple-300">412,800</strong>
                   </div>
                 </div>
               </div>
 
-              {/* Engagement Badges */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5 text-left">
-                  <span className="text-xs text-slate-400 block mb-1">Average Watch Time</span>
-                  <span className="font-display font-black text-white text-xl">94.2%</span>
-                  <span className="text-[11px] text-emerald-400 block mt-0.5">High algorithmic push</span>
+              {/* 2 Stats Badges */}
+              <div className="grid grid-cols-2 gap-3 mt-4 text-xs">
+                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                  <span className="text-slate-400 block text-[11px]">Avg Watch Duration</span>
+                  <span className="font-display font-black text-white text-lg">94.2%</span>
                 </div>
-                <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5 text-left">
-                  <span className="text-xs text-slate-400 block mb-1">Commercial Freedom</span>
-                  <span className="font-display font-black text-yellow-400 text-xl">100% Safe</span>
-                  <span className="text-[11px] text-slate-400 block mt-0.5">No copyright strikes</span>
+                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                  <span className="text-slate-400 block text-[11px]">Commercial Freedom</span>
+                  <span className="font-display font-black text-yellow-400 text-lg">100% Safe</span>
                 </div>
               </div>
-
-              <p className="text-xs text-slate-400 text-left leading-relaxed">
-                When you post high-status AI lion reels paired with trending cinematic tracks, Instagram&apos;s algorithm immediately serves them to explore pages across India and global audiences.
-              </p>
             </div>
 
-            {/* Action CTA */}
-            <div className="pt-6 border-t border-white/10 mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <span className="text-xs text-slate-300">
-                Bundle includes all viral source MP4 files + audio hooks.
-              </span>
+            <div className="mt-5 pt-4 border-t border-white/10">
               <button
                 onClick={onBuyClick}
-                className="neon-btn-primary px-6 py-3 rounded-xl text-xs font-black text-white cursor-pointer w-full sm:w-auto"
+                className="neon-btn-primary w-full py-3 rounded-xl text-xs font-black text-white flex items-center justify-center gap-2 cursor-pointer shadow-lg"
               >
-                GET THIS EXACT BUNDLE (₹197)
+                <span>GET ALL VIRAL REELS FOR ₹197</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
-
           </div>
 
         </div>

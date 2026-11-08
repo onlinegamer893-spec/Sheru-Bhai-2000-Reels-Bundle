@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ASSET_IMAGES } from '../constants';
 import { ShieldCheck, Search, Lock, ShoppingBag, Menu, X } from 'lucide-react';
 
@@ -14,15 +14,61 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAdmin,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<{ formatted: string; isEnded: boolean }>({
+    formatted: '05:41',
+    isEnded: false,
+  });
+
+  useEffect(() => {
+    // Configurable persistent end time in localStorage (5 min 41 sec window from first load)
+    const STORAGE_KEY = 'sb_flash_sale_end_time';
+    let targetTime = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
+
+    const now = Date.now();
+    // If not set or expired in the past by more than 1 hour, initialize with 5 min 41 sec (341 seconds)
+    if (!targetTime || targetTime < now) {
+      targetTime = now + (5 * 60 + 41) * 1000;
+      localStorage.setItem(STORAGE_KEY, targetTime.toString());
+    }
+
+    const updateTimer = () => {
+      const remainingMs = targetTime - Date.now();
+      if (remainingMs <= 0) {
+        setTimeLeft({ formatted: 'SALE ENDED', isEnded: true });
+        return;
+      }
+      const totalSeconds = Math.floor(remainingMs / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      const mm = minutes.toString().padStart(2, '0');
+      const ss = seconds.toString().padStart(2, '0');
+      setTimeLeft({ formatted: `${mm}:${ss}`, isEnded: false });
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#050509]/85 border-b border-white/10">
-      {/* Top Notice Bar */}
-      <div className="bg-gradient-to-r from-purple-900/60 via-indigo-900/60 to-blue-900/60 border-b border-purple-500/20 py-1.5 px-4 text-center">
-        <p className="text-xs text-purple-200 font-medium tracking-wide flex items-center justify-center gap-2">
-          <span className="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
-          <span>LIMITED TIME OFFER: Get 1,000+ Viral AI Reels for just <strong className="text-yellow-400 font-bold">₹197</strong> (84% OFF)</span>
-        </p>
+    <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#050509]/90 border-b border-white/10">
+      {/* 1. TOP FLASH SALE ANNOUNCEMENT BAR */}
+      <div className="bg-gradient-to-r from-purple-700 via-indigo-600 to-blue-600 border-b border-purple-400/30 py-2 px-3 text-center shadow-md">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[11px] sm:text-xs font-bold text-white tracking-wide">
+          <span className="flex items-center gap-1.5 text-yellow-300 drop-shadow-sm whitespace-normal text-center">
+            <span>⚡ FLASH SALE ENDING SOON — GET AI SHERU BHAI REELS FOR JUST ₹197/- (80% OFF)</span>
+          </span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/40 border border-yellow-400/50 text-yellow-300 font-mono text-[11px] sm:text-xs tabular-nums tracking-widest shadow-inner shrink-0">
+            {timeLeft.isEnded ? (
+              <span className="text-red-400 font-bold uppercase">SALE ENDED</span>
+            ) : (
+              <>
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                <span>{timeLeft.formatted}</span>
+              </>
+            )}
+          </span>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -48,6 +48,7 @@ export interface StoreSettings {
   upiId: string;
   merchantName: string;
   supportWhatsApp: string;
+  adminEmail: string;
   adminPasswordHash: string; // default hash for 'sheru2026'
   bundleDownloadUrl: string;
   instagram: {
@@ -75,11 +76,15 @@ const DEFAULT_SETTINGS: StoreSettings = {
   productName: 'SHERU BHAI VIRAL REELS BUNDLE',
   originalPrice: 1199,
   sellingPrice: 197,
-  discountPercentage: 84,
+  discountPercentage: 80,
   upiId: 'sherubhai.reels@oksbi',
   merchantName: 'SHERU BHAI MEDIA',
   supportWhatsApp: '+919876543210',
-  adminPasswordHash: crypto.createHash('sha256').update('sheru2026').digest('hex'),
+  adminEmail: process.env.ADMIN_EMAIL || 'admin@sherubhai.store',
+  adminPasswordHash: crypto
+    .createHash('sha256')
+    .update(process.env.ADMIN_PASSWORD || 'sheru2026')
+    .digest('hex'),
   bundleDownloadUrl: 'https://drive.google.com/drive/folders/1SheruBhaiMasterVaultHDReelsAI',
   instagram: {
     username: 'sherubhai.official',
@@ -87,14 +92,14 @@ const DEFAULT_SETTINGS: StoreSettings = {
     followersCount: '1.4M',
     followingCount: '84',
     postsCount: '342',
-    bio: '🔥 India’s #1 AI Reels Creator\n🚀 100M+ Monthly Views\n👑 Living Royal • AI Supercars • Animal Attitude\n👇 Get 1000+ Ready Reels for ₹197 Only!',
+    bio: '🔥 India’s #1 AI Reels Creator\n🚀 100M+ Monthly Views\n👑 Living Royal • AI Supercars • Animal Attitude\n👇 Get 2000+ Ready Reels for ₹197 Only!',
     isVerified: true,
   },
   demoReels: [
     {
       id: 'demo-1',
       title: 'Night Rider · Supercar Beast',
-      category: 'Luxury Cars & Speed',
+      category: 'Luxury Cars',
       views: '14.8M',
       likes: '1.2M',
       thumbnailUrl: '/src/assets/images/demo_reel_supercar_1794107967087.jpg',
@@ -103,7 +108,7 @@ const DEFAULT_SETTINGS: StoreSettings = {
     {
       id: 'demo-2',
       title: 'Maharaja Lion King · Royal Attitude',
-      category: 'Royal Lifestyle & Attitude',
+      category: 'Royal Lifestyle',
       views: '22.4M',
       likes: '1.9M',
       thumbnailUrl: '/src/assets/images/demo_reel_royal_1794107966987.jpg',
@@ -112,11 +117,20 @@ const DEFAULT_SETTINGS: StoreSettings = {
     {
       id: 'demo-3',
       title: 'Beast Mode · Iron Never Lies',
-      category: 'High Energy Motivation',
+      category: 'Fitness & Attitude',
       views: '9.6M',
       likes: '740K',
       thumbnailUrl: '/src/assets/images/demo_reel_fitness_1794107968437.jpg',
       description: 'Ultra-muscular lion dominating heavy gym sets with neon electric pump.',
+    },
+    {
+      id: 'demo-4',
+      title: 'Tropical Squad · Vacation King',
+      category: 'Funny Animals',
+      views: '18.2M',
+      likes: '1.5M',
+      thumbnailUrl: '/src/assets/images/demo_reel_funny_lion_1794109493564.jpg',
+      description: 'Chilling with funny tropical animal squad on luxury beach resort.',
     },
   ],
 };
@@ -510,40 +524,135 @@ app.get('/api/download/:token', (req: Request, res: Response) => {
   `);
 });
 
+// In-memory or persisted admin sessions
+interface AdminSession {
+  token: string;
+  email: string;
+  expiresAt: number;
+}
+let activeAdminSessions: Record<string, AdminSession> = {};
+let pendingPasswordResets: Record<string, { email: string; expiresAt: number }> = {};
+
 // Admin Authentication Middleware & Endpoints
 function verifyAdmin(req: Request, res: Response, next: () => void) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, message: 'Admin authentication required.' });
+    return res.status(401).json({ success: false, message: 'Admin authorization token required.' });
   }
   const token = authHeader.split(' ')[1];
   const db = readDb();
-  if (token !== db.settings.adminPasswordHash) {
-    return res.status(401).json({ success: false, message: 'Invalid or expired admin session.' });
+
+  // Check valid active session or direct hash match
+  const session = activeAdminSessions[token];
+  if (session && Date.now() < session.expiresAt) {
+    return next();
   }
-  next();
+
+  if (token === db.settings.adminPasswordHash) {
+    return next();
+  }
+
+  return res.status(401).json({ success: false, message: 'Invalid or expired admin session. Please log in again.' });
 }
 
-// 7. Admin Login
+// 7. Admin Login (Email & Password with server authorization)
 app.post('/api/admin/login', (req: Request, res: Response) => {
-  const { password } = req.body;
+  const { email, password } = req.body;
   if (!password) {
-    return res.status(400).json({ success: false, message: 'Password required' });
+    return res.status(400).json({ success: false, message: 'Password is required' });
   }
 
   const db = readDb();
+  const configuredEmail = (process.env.ADMIN_EMAIL || db.settings.adminEmail || 'admin@sherubhai.store').toLowerCase().trim();
+  const configuredHash = db.settings.adminPasswordHash || crypto.createHash('sha256').update(process.env.ADMIN_PASSWORD || 'sheru2026').digest('hex');
+
+  const inputEmail = email ? String(email).toLowerCase().trim() : '';
   const inputHash = crypto.createHash('sha256').update(password.trim()).digest('hex');
 
-  // Allow either configured password hash or default fallback
-  if (inputHash === db.settings.adminPasswordHash || password.trim() === 'sheru2026' || password.trim() === 'admin123') {
+  // Verify email if provided (or allow default email login)
+  const isEmailValid = !inputEmail || inputEmail === configuredEmail || inputEmail === 'admin@sherubhai.store';
+  const isPasswordValid = inputHash === configuredHash || password.trim() === 'sheru2026' || password.trim() === (process.env.ADMIN_PASSWORD || '');
+
+  if (isEmailValid && isPasswordValid) {
+    // Generate secure session token
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+    activeAdminSessions[sessionToken] = {
+      token: sessionToken,
+      email: inputEmail || configuredEmail,
+      expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+    };
+
     return res.json({
       success: true,
-      token: db.settings.adminPasswordHash,
-      message: 'Admin access granted.',
+      token: sessionToken,
+      email: inputEmail || configuredEmail,
+      message: 'Admin authorization granted.',
     });
   }
 
-  return res.status(401).json({ success: false, message: 'Incorrect admin password.' });
+  return res.status(401).json({ success: false, message: 'Invalid admin email or password.' });
+});
+
+// Admin Forgot Password
+app.post('/api/admin/forgot-password', (req: Request, res: Response) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ success: false, message: 'Admin email required' });
+  }
+
+  const db = readDb();
+  const configuredEmail = (process.env.ADMIN_EMAIL || db.settings.adminEmail || 'admin@sherubhai.store').toLowerCase().trim();
+
+  if (String(email).toLowerCase().trim() !== configuredEmail && String(email).toLowerCase().trim() !== 'admin@sherubhai.store') {
+    return res.status(404).json({ success: false, message: 'No registered admin account found with this email.' });
+  }
+
+  // Generate a secure one-time reset token (valid for 15 mins)
+  const resetToken = crypto.randomBytes(16).toString('hex');
+  pendingPasswordResets[resetToken] = {
+    email: configuredEmail,
+    expiresAt: Date.now() + 15 * 60 * 1000,
+  };
+
+  return res.json({
+    success: true,
+    message: 'Password reset request authorized. Use reset code to set a new password.',
+    resetCode: resetToken.slice(0, 8).toUpperCase(),
+    resetToken,
+  });
+});
+
+// Admin Reset Password with Code
+app.post('/api/admin/reset-password', (req: Request, res: Response) => {
+  const { resetToken, newPassword } = req.body;
+  if (!resetToken || !newPassword || newPassword.length < 4) {
+    return res.status(400).json({ success: false, message: 'Valid reset token and strong password required' });
+  }
+
+  const resetRecord = pendingPasswordResets[resetToken];
+  if (!resetRecord || Date.now() > resetRecord.expiresAt) {
+    return res.status(400).json({ success: false, message: 'Reset token is invalid or has expired.' });
+  }
+
+  const db = readDb();
+  db.settings.adminPasswordHash = crypto.createHash('sha256').update(newPassword.trim()).digest('hex');
+  writeDb(db);
+  delete pendingPasswordResets[resetToken];
+
+  return res.json({
+    success: true,
+    message: 'Admin password reset successfully. Please log in with your new credentials.',
+  });
+});
+
+// Admin Logout
+app.post('/api/admin/logout', (req: Request, res: Response) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
+    delete activeAdminSessions[token];
+  }
+  return res.json({ success: true, message: 'Logged out successfully.' });
 });
 
 // 8. Admin Orders list with stats
