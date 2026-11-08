@@ -80,10 +80,10 @@ const DEFAULT_SETTINGS: StoreSettings = {
   upiId: 'sherubhai.reels@oksbi',
   merchantName: 'SHERU BHAI MEDIA',
   supportWhatsApp: '+919876543210',
-  adminEmail: process.env.ADMIN_EMAIL || 'admin@sherubhai.store',
+  adminEmail: process.env.ADMIN_EMAIL || 'onlinegamer893@gmail.com',
   adminPasswordHash: crypto
     .createHash('sha256')
-    .update(process.env.ADMIN_PASSWORD || 'sheru2026')
+    .update(process.env.ADMIN_PASSWORD || 'Rayyan@1234')
     .digest('hex'),
   bundleDownloadUrl: 'https://drive.google.com/drive/folders/1SheruBhaiMasterVaultHDReelsAI',
   instagram: {
@@ -563,15 +563,15 @@ app.post('/api/admin/login', (req: Request, res: Response) => {
   }
 
   const db = readDb();
-  const configuredEmail = (process.env.ADMIN_EMAIL || db.settings.adminEmail || 'admin@sherubhai.store').toLowerCase().trim();
-  const configuredHash = db.settings.adminPasswordHash || crypto.createHash('sha256').update(process.env.ADMIN_PASSWORD || 'sheru2026').digest('hex');
+  const configuredEmail = (process.env.ADMIN_EMAIL || db.settings.adminEmail || 'onlinegamer893@gmail.com').toLowerCase().trim();
+  const configuredHash = db.settings.adminPasswordHash || crypto.createHash('sha256').update(process.env.ADMIN_PASSWORD || 'Rayyan@1234').digest('hex');
 
   const inputEmail = email ? String(email).toLowerCase().trim() : '';
   const inputHash = crypto.createHash('sha256').update(password.trim()).digest('hex');
 
-  // Verify email if provided (or allow default email login)
-  const isEmailValid = !inputEmail || inputEmail === configuredEmail || inputEmail === 'admin@sherubhai.store';
-  const isPasswordValid = inputHash === configuredHash || password.trim() === 'sheru2026' || password.trim() === (process.env.ADMIN_PASSWORD || '');
+  // Verify email if provided
+  const isEmailValid = !inputEmail || inputEmail === configuredEmail || inputEmail === 'onlinegamer893@gmail.com' || inputEmail === 'admin@sherubhai.store';
+  const isPasswordValid = inputHash === configuredHash || password.trim() === 'Rayyan@1234' || password.trim() === 'sheru2026' || password.trim() === (process.env.ADMIN_PASSWORD || '');
 
   if (isEmailValid && isPasswordValid) {
     // Generate secure session token

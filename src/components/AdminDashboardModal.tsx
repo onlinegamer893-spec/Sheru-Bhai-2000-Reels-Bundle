@@ -36,7 +36,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   );
   
   // Login credentials state
-  const [emailInput, setEmailInput] = useState('');
+  const [emailInput, setEmailInput] = useState('onlinegamer893@gmail.com');
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -377,7 +377,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                       </label>
                       <input
                         type="email"
-                        placeholder="admin@sherubhai.store"
+                        placeholder="onlinegamer893@gmail.com"
                         value={emailInput}
                         onChange={(e) => setEmailInput(e.target.value)}
                         className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/15 focus:border-purple-400 text-white text-xs focus:outline-none"
