@@ -50,29 +50,20 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onBuyClick, onExploreD
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
           
-          {/* LEFT: Prominent Product Cover Mockup */}
+          {/* LEFT: Prominent Product Cover (Full Size 1:1 Square, Uncropped) */}
           <div className="lg:col-span-5 flex flex-col items-center">
-            <div className="relative w-full max-w-md aspect-4/3 sm:aspect-square rounded-2xl overflow-hidden glass-panel-glow p-2 border border-purple-500/30 shadow-2xl">
-              <div className="relative w-full h-full rounded-xl overflow-hidden bg-[#07060e] flex items-center justify-center">
+            <div className="relative w-full max-w-md sm:max-w-lg lg:max-w-[500px] aspect-square rounded-3xl overflow-hidden glass-panel-glow p-2.5 sm:p-3.5 border border-purple-500/35 shadow-2xl bg-[#090714] flex items-center justify-center">
+              <div className="relative w-full h-full rounded-2xl overflow-hidden flex items-center justify-center bg-black/40">
                 <img
                   src={activeImage}
-                  alt="Sheru Bhai Reels Bundle Cover Mockup"
+                  alt="Sheru Bhai Viral Reels Bundle 1536x1536 Cover"
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-102"
+                  className="w-full h-full object-contain select-none drop-shadow-2xl"
                 />
 
-                {/* 2027 Edition Badge */}
-                <div className="absolute top-3 right-3 bg-black/85 backdrop-blur-md border border-yellow-400/60 px-3 py-1 rounded-lg text-[11px] font-black text-yellow-400 tracking-wider uppercase shadow-xl">
+                {/* Subtle 2027 Edition Badge */}
+                <div className="absolute top-3 right-3 bg-black/85 backdrop-blur-md border border-yellow-400/60 px-2.5 py-1 rounded-lg text-[10px] font-black text-yellow-400 tracking-wider uppercase shadow-xl">
                   ★ 2027 MASTER EDITION
-                </div>
-
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent p-4 text-left">
-                  <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest block">
-                    EXCLUSIVE BUNDLE
-                  </span>
-                  <div className="text-sm font-black text-white font-display">
-                    SHERU BHAI VIRAL REELS VAULT
-                  </div>
                 </div>
               </div>
             </div>

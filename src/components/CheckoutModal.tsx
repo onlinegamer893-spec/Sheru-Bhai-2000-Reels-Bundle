@@ -60,9 +60,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       setSubmittedOrder(null);
       // Fetch fresh unique order ID from server
       fetch('/api/orders/initiate', { method: 'POST' })
-        .then((res) => res.json())
+        .then(async (res) => {
+          if (!res.ok) return null;
+          const text = await res.text();
+          return text && text.trim().startsWith('{') ? JSON.parse(text) : null;
+        })
         .then((data) => {
-          if (data.success && data.orderId) {
+          if (data && data.success && data.orderId) {
             setOrderId(data.orderId);
           } else {
             setOrderId(`SB-${Math.floor(1000 + Math.random() * 9000)}`);
@@ -167,11 +171,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         }),
       });
 
-      const contentType = response.headers.get('content-type') || '';
       let data: any = null;
-      if (contentType.includes('application/json')) {
-        data = await response.json();
-      }
+      try {
+        const text = await response.text();
+        if (text && text.trim().startsWith('{')) {
+          data = JSON.parse(text);
+        }
+      } catch (_) {}
 
       if (data && data.success) {
         try {

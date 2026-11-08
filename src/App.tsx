@@ -56,22 +56,21 @@ export default function App() {
   const loadConfig = async () => {
     try {
       const res = await fetch('/api/config');
-      const contentType = res.headers.get('content-type') || '';
-      if (contentType.includes('application/json')) {
-        const data = await res.json();
-        if (data.success && data.settings) {
-          setStoreConfig((prev) => {
-            const updated = {
-              ...prev,
-              ...data.settings,
-            };
-            try {
-              localStorage.setItem('sb_store_settings', JSON.stringify(updated));
-            } catch (_) {}
-            return updated;
-          });
-          return;
-        }
+      if (!res.ok) return;
+      const text = await res.text();
+      if (!text || !text.trim().startsWith('{')) return;
+      const data = JSON.parse(text);
+      if (data && data.success && data.settings) {
+        setStoreConfig((prev) => {
+          const updated = {
+            ...prev,
+            ...data.settings,
+          };
+          try {
+            localStorage.setItem('sb_store_settings', JSON.stringify(updated));
+          } catch (_) {}
+          return updated;
+        });
       }
     } catch (err) {
       console.warn('Could not load remote config, using cache:', err);

@@ -73,11 +73,13 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
         authToUse ? `&auth=${encodeURIComponent(authToUse)}` : ''
       }`;
       const res = await fetch(url);
-      const contentType = res.headers.get('content-type') || '';
       let data: any = null;
-      if (contentType.includes('application/json')) {
-        data = await res.json();
-      }
+      try {
+        const text = await res.text();
+        if (text && text.trim().startsWith('{')) {
+          data = JSON.parse(text);
+        }
+      } catch (_) {}
 
       if (data && data.success) {
         setOrder(data.order);
@@ -159,11 +161,13 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ auth: order.mobile || order.email }),
       });
-      const contentType = res.headers.get('content-type') || '';
       let data: any = null;
-      if (contentType.includes('application/json')) {
-        data = await res.json();
-      }
+      try {
+        const text = await res.text();
+        if (text && text.trim().startsWith('{')) {
+          data = JSON.parse(text);
+        }
+      } catch (_) {}
 
       if (data && data.success) {
         setSignedDownloadUrl(data.downloadUrl);
@@ -205,11 +209,13 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
           screenshotBase64: resubmitScreenshot || undefined,
         }),
       });
-      const contentType = res.headers.get('content-type') || '';
       let data: any = null;
-      if (contentType.includes('application/json')) {
-        data = await res.json();
-      }
+      try {
+        const text = await res.text();
+        if (text && text.trim().startsWith('{')) {
+          data = JSON.parse(text);
+        }
+      } catch (_) {}
 
       if (data && data.success) {
         setIsResubmitting(false);

@@ -1,0 +1,47 @@
+rules_version = '2';
+
+// Firebase Storage Rules for Sheru Bhai Reels Store
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Helper functions
+    function isAdmin() {
+      return request.auth != null;
+    }
+
+    // 1. Product Images: Public read access, Admin write
+    match /product-images/{imageId} {
+      allow read: if true;
+      allow write: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // 2. Instagram Demo Images: Public read access, Admin write
+    match /instagram-demo/{demoId} {
+      allow read: if true;
+      allow write: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // 3. Demo Reels Videos (MP4): Public read access, Admin write
+    match /demo-videos/{videoId} {
+      allow read: if true;
+      allow write: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // 4. Demo Video Thumbnails: Public read access, Admin write
+    match /demo-thumbnails/{thumbId} {
+      allow read: if true;
+      allow write: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // 5. Product Download ZIP Files: Secure private access only (Admin write, verified tokens)
+    match /product-downloads/{fileId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+      allow delete: if isAdmin();
+    }
+  }
+}
